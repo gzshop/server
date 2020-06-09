@@ -24,6 +24,7 @@ COS_secret_key = os.getenv("COS_secret_key","")
 AliPay_Appid = os.getenv("AliPay_Appid","")
 AliPay_alipay_private_key = os.getenv("AliPay_alipay_private_key","")
 AliPay_alipay_public_key = os.getenv("AliPay_alipay_public_key","")
+AliPay_way = os.getenv("AliPay_way","https://openapi.alipaydev.com/gateway.do")
 
 #小程序
 WECHAT_APPID = os.getenv("WECHAT_APPID","")

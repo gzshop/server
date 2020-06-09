@@ -7,7 +7,7 @@ import xmltodict
 from decimal import *
 
 from project.config_include.params import WECHAT_PAY_KEY,WECHAT_APPID,CALLBACKURL,WECHAT_PAY_MCHID,WECHAT_PAY_RETURN_KEY,\
-    AliPay_Appid,AliPay_alipay_private_key,AliPay_alipay_public_key
+    AliPay_Appid,AliPay_alipay_private_key,AliPay_alipay_public_key,AliPay_way
 from lib.utils.exceptions import PubErrorCustom
 from app.order.models import Order
 from app.user.models import Users
@@ -238,5 +238,5 @@ class AlipayBase(object):
             notify_url=None,
         )
         print(order_string)
-        return 'https://openapi.alipaydev.com/gateway.do?' + order_string
+        return '{}?{}'.format(AliPay_way,order_string)
 
