@@ -213,6 +213,13 @@ class AlipayBase(object):
 
     def __init__(self):
 
+        print(AliPay_alipay_private_key)
+
+
+        print(AliPay_alipay_public_key)
+
+        print(AliPay_Appid)
+
         self.alipay = AliPay(
             appid=AliPay_Appid,
             app_notify_url=None,  # 默认回调url
