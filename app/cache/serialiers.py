@@ -129,8 +129,12 @@ class GoodsModelSerializerToRedis(serializers.ModelSerializer):
     #         return ""
 
     def get_gdsku(self,obj):
+        d=json.loads(obj.gdsku)
+        for item in d:
+            for item1 in item['attributeValueList']:
+                item1['pid'] = item['group_id']
 
-        return json.loads(obj.gdsku)
+        return d
 
     def get_gdimg(self,obj):
 

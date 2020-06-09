@@ -4,7 +4,7 @@ from rest_framework.decorators import list_route
 
 from lib.core.decorator.response import Core_connector
 from lib.utils.exceptions import PubErrorCustom
-from lib.utils.db import RedisTokenHandler
+from lib.utils.db import RedisTokenHandler,RedisVercodeHandler
 from lib.utils.string_extension import get_token
 from lib.utils.http_request import send_request_other
 
@@ -151,3 +151,46 @@ class SsoAPIView(viewsets.ViewSet):
         redis_cli.redis_dict_set(res)
 
         return { "data": token}
+
+    #获取验证码
+    @list_route(methods=['POST'])
+    @Core_connector(isPasswd=True)
+    def getVercode(self,request, *args, **kwargs):
+
+
+        vercode = "111111"
+        RedisVercodeHandler().set(request.data_format.get("mobile",""),vercode)
+
+
+        return {"data":"111111"}
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,isPasswd=True)
+    def login1(self, request):
+
+        try:
+            user = Users.objects.get(uuid=request.data_format.get("mobile",""))
+        except Users.DoesNotExist:
+            user = Users.objects.create(**{
+                "userid": idGenerator.userid('4001'),
+                "uuid": request.data_format.get("mobile",""),
+                "rolecode": '4001',
+                "mobile": request.data_format.get("mobile",""),
+                "name": request.data_format.get("mobile",""),
+                "sex": "",
+                "addr": "",
+                "pic": "",
+                "appid": ""
+            })
+
+        if request.data_format.get('vercode',"1") != RedisVercodeHandler().get(user.uuid):
+            raise PubErrorCustom("验证码错误!")
+
+        token = get_token()
+        res = UserModelSerializerToRedis(user, many=False).data
+        RedisTokenHandler(key=token).redis_dict_set(res)
+
+        return {"data": {
+            "token": token,
+            "userinfo":UsersSerializers(user, many=False).data
+        }}

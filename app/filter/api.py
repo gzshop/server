@@ -10,8 +10,8 @@ from lib.utils.db import RedisCaCheHandlerCitySheng,RedisCaCheHandlerCityShi,Red
 from app.cache.utils import RedisCaCheHandler
 
 from app.order.models import Address
-from app.goods.models import Goods
-from app.goods.serialiers import GoodsForSearchSerializer
+from app.goods.models import Goods,GoodsLinkSku
+from app.goods.serialiers import GoodsForSearchSerializer,GoodsLinkSkuSearchSerializer
 from app.order.serialiers import AddressModelSerializer
 
 from lib.utils.db import RedisTokenHandler
@@ -92,13 +92,8 @@ class FilterAPIView(viewsets.ViewSet):
                     gdname = res['gdname'],
                     gdprice = res['gdprice'],
                     detail = res['detail'],
-                    product = res['product'],
-                    shbz = res['shbz'],
-                    code = res['code'],
-                    virtual = res['virtual'],
-                    gdtext=res['gdtext'],
-                    qrcode = res['qrcode'],
-                    hb=res['hb']
+                    gdsku=res['gdsku'],
+                    goodslinksku=GoodsLinkSkuSearchSerializer(GoodsLinkSku.objects.filter(gdid=res['gdid']).order_by('sort'),many=True).data
                 )
             }
         else:

@@ -23,9 +23,7 @@ class Login(models.Model):
 
 class Users(models.Model):
 
-    id=models.AutoField(primary_key=True)
-
-    userid = models.BigIntegerField(verbose_name="用户ID")
+    userid = models.BigAutoField(verbose_name="用户ID",primary_key=True)
     rolecode=models.IntegerField(verbose_name="角色代码")
 
     name = models.CharField(max_length=120, verbose_name="名称", default='', null=True)

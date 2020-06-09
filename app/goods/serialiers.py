@@ -7,6 +7,7 @@ from lib.utils.mytime import UtilTime
 
 
 class GoodsLinkSkuSearchSerializer(serializers.Serializer):
+    id=serializers.IntegerField()
     active_num = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     sku_code = serializers.SerializerMethodField()
@@ -49,10 +50,10 @@ class GoodsLinkSkuSearchSerializer(serializers.Serializer):
         return obj.number
 
     def get_price(self,obj):
-        return obj.price
+        return round(obj.price,2)
 
     def get_origin_price(self,obj):
-        return obj.cost_price
+        return round(obj.cost_price,2)
 
     def get_sku_code(self,obj):
         return obj.code

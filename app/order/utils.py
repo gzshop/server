@@ -1,15 +1,19 @@
 
+import os
 import requests,string,random,time
 import hashlib
 import json
 import xmltodict
 from decimal import *
 
-from project.config_include.params import WECHAT_PAY_KEY,WECHAT_APPID,CALLBACKURL,WECHAT_PAY_MCHID,WECHAT_PAY_RETURN_KEY
+from project.config_include.params import WECHAT_PAY_KEY,WECHAT_APPID,CALLBACKURL,WECHAT_PAY_MCHID,WECHAT_PAY_RETURN_KEY,\
+    AliPay_Appid,AliPay_alipay_private_key,AliPay_alipay_public_key
 from lib.utils.exceptions import PubErrorCustom
 from app.order.models import Order
 from app.user.models import Users
 from app.user.models import BalList
+from alipay import AliPay
+from django.conf import settings
 
 class wechatPay(object):
 
@@ -203,3 +207,29 @@ def updBalList(user,order,amount,bal,confirm_bal,memo,cardno=None):
         "memo":memo,
         "orderid":order.orderid if order else cardno
     })
+
+
+class AlipayBase(object):
+
+    def __init__(self):
+
+        self.alipay = AliPay(
+            appid=AliPay_Appid,
+            app_notify_url=None,  # 默认回调url
+            app_private_key_string=AliPay_alipay_private_key,
+            alipay_public_key_string=AliPay_alipay_public_key,
+            sign_type="RSA2",
+            debug=True,  # 上线则改为False , 沙箱True
+        )
+
+    def create(self,order_id,amount):
+        order_string = self.alipay.api_alipay_trade_app_pay(
+            out_trade_no=order_id,
+            total_amount=str(amount),
+            subject='支付订单:%s' % order_id,
+            return_url=None,
+            notify_url=None,
+        )
+        print(order_string)
+        return 'https://openapi.alipaydev.com/gateway.do?' + order_string
+

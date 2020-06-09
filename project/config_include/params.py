@@ -15,9 +15,15 @@ APIURL = "{}/{}{}".format(BASEURL,VERSION,"/api")
 CALLBACKURL = "{}{}".format(APIURL,"/order/txPayCallback")
 
 #COS
-
 COS_secret_id = os.getenv("COS_secret_id","")
 COS_secret_key = os.getenv("COS_secret_key","")
+
+"""
+支付宝支付
+"""
+AliPay_Appid = os.getenv("AliPay_Appid","")
+AliPay_alipay_private_key = os.getenv("AliPay_alipay_private_key","")
+AliPay_alipay_public_key = os.getenv("AliPay_alipay_public_key","")
 
 #小程序
 WECHAT_APPID = os.getenv("WECHAT_APPID","")

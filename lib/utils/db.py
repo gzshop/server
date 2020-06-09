@@ -163,3 +163,19 @@ class RedisTokenHandler(RedisHandler):
     def __init__(self,**kwargs):
         kwargs.setdefault('db', 'token')
         super().__init__(**kwargs)
+
+
+class RedisVercodeHandler(RedisHandler):
+    def __init__(self,**kwargs):
+        kwargs.setdefault('db', 'token')
+        super().__init__(**kwargs)
+
+    def set(self,mobile,vercode):
+        self.key = "vercode_{}".format(mobile)
+        self.redis_client.set(self.key, vercode)
+        self.redis_client.expire(self.key, 120)
+
+    def get(self,mobile):
+        self.key = "vercode_{}".format(mobile)
+        res = self.redis_client.get(self.key)
+        return res.decode('utf-8') if res else ""

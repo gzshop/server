@@ -99,6 +99,8 @@ class Order(models.Model):
     createtime = models.BigIntegerField(default=0)
     updtime = models.BigIntegerField(default=0)
 
+    yf = models.DecimalField(verbose_name="运费",max_digits=18,decimal_places=6,default=0.0)
+
     def save(self, *args, **kwargs):
 
         if not self.orderid:
