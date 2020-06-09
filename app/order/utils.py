@@ -238,5 +238,5 @@ class AlipayBase(object):
             notify_url=None,
         )
         print(order_string)
-        return '{}?{}'.format(AliPay_way,order_string)
+        return order_string
 
