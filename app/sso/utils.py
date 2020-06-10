@@ -6,6 +6,13 @@ from requests import request
 from project.config_include.params import Tx_Sms_secretId,Tx_Sms_secretKey
 from lib.utils.exceptions import PubErrorCustom
 
+try:
+    from urllib import urlencode
+    from urllib2 import Request, urlopen
+except ImportError:
+    from urllib.parse import urlencode
+    from urllib.request import Request, urlopen
+
 def sendMsg(mobile,vercode):
     # 云市场分配的密钥Id
     secretId = Tx_Sms_secretId
