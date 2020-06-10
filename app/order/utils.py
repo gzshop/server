@@ -7,13 +7,16 @@ import xmltodict
 from decimal import *
 
 from project.config_include.params import WECHAT_PAY_KEY,WECHAT_APPID,CALLBACKURL,WECHAT_PAY_MCHID,WECHAT_PAY_RETURN_KEY,\
-    AliPay_Appid,AliPay_app_private_key,AliPay_alipay_public_key,AliPay_way,Alipay_callbackUrl
+    AliPay_Appid,AliPay_app_private_key,AliPay_alipay_public_key,AliPay_way,Alipay_callbackUrl,FASTMAIL_Key
 from lib.utils.exceptions import PubErrorCustom
 from app.order.models import Order
 from app.user.models import Users
 from app.user.models import BalList
 from alipay import AliPay
 from django.conf import settings
+from lib.utils.string_extension import md5pass
+import base64
+from urllib import parse
 
 class wechatPay(object):
 
@@ -262,3 +265,79 @@ class AlipayBase(object):
 
         orderObj.status = '1'
         orderObj.save()
+
+
+class fastMail(object):
+
+    def __init__(self):
+
+        self.url = "http://api.kdniao.com/Ebusiness/EbusinessOrderHandle.aspx"
+        self.key = FASTMAIL_Key
+        self.request_data = {
+            "EBusinessID": "1648972",
+            "RequestType": "1002",
+            "DataType": 2,
+            "RequestData": "",
+            "DataSign": ""
+        }
+
+    def _select(self,ShipperCode):
+        data={
+            "EMS":"EMS",
+            "SF":"顺丰速运",
+            "YZBK":"邮政国内标快",
+            "YZPY":"邮政快递包裹",
+            "ZJS":"宅急送",
+            "LHT":"联昊通速递",
+            "UAPEX":"全一快递",
+            "STO":"申通快递",
+            "DBL":"德邦快递",
+            "JD":"京东快递",
+            "XFEX":"信丰物流",
+            "HHTT":"天天快递",
+            "SURE":"速尔快递",
+            "KYSY":"跨越速运",
+            "PJ":"品骏快递",
+            "CND":"承诺达",
+            "JTSD":"极兔速递",
+            "DNWL":"丹鸟物流",
+            "SNWL":"苏宁物流",
+            "ZTO":"中通快递",
+            "YD":"韵达速递",
+            "HTKY":"百世快递",
+            "YTO":"圆通速递",
+            "YCWL":"远成快运",
+            "UC":"优速快递",
+            "ANE":"安能快递"
+        }
+
+        return data.get(ShipperCode,"编号非法")
+
+    def sign(self, signValue):
+        s = md5pass(json.dumps(signValue) + self.key)
+        a = base64.b64encode(s.encode('utf-8'))
+        return parse.quote(a)
+
+    def query(self, ShipperCode, LogisticCode):
+
+        data = {
+            "ShipperCode": ShipperCode,
+            "LogisticCode": LogisticCode
+        }
+
+        self.request_data['DataSign'] = self.sign(data)
+        self.request_data['RequestData'] = parse.quote(json.dumps(data))
+
+        print(self.request_data)
+
+        response = requests.request(method="POST", data=self.request_data, url=self.url)
+
+        response = json.loads(response.content)
+        print(response)
+        if response['Success']:
+            response['company'] = self._select(response['ShipperCode'])
+            return response
+        else:
+            return response
+
+

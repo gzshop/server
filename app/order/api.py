@@ -20,9 +20,8 @@ from app.order.models import Address
 
 from app.goods.models import Card,Cardvirtual,DeliveryCode,Goods,GoodsLinkSku
 
-from app.order.utils import wechatPay
+from app.order.utils import wechatPay,updBalList,AlipayBase,fastMail
 from lib.utils.db import RedisTokenHandler
-from app.order.utils import updBalList,AlipayBase
 
 class OrderAPIView(viewsets.ViewSet):
 
@@ -236,7 +235,15 @@ class OrderAPIView(viewsets.ViewSet):
 
         return {"data": json.loads(obj.virtualids).get('ids')}
 
+    @list_route(methods=['GET'])
+    @Core_connector(isPasswd=True,isTicket=True)
+    def wlQuery(self, request):
 
+        try:
+            order = Order.objects.get(orderid=request.query_params_format.get("orderid"))
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单号不存在!")
+        return {"data":fastMail().query(order.kdname,order.kdno)}
 
     @list_route(methods=['GET'])
     @Core_connector(isPasswd=True,isTicket=True)
@@ -250,7 +257,9 @@ class OrderAPIView(viewsets.ViewSet):
             elif status == 2:
                 orderQuery = orderQuery.filter(status='1')
             elif status == 3:
-                orderQuery = orderQuery.filter(status='9')
+                orderQuery = orderQuery.filter(status='2')
+            elif status == 4:
+                orderQuery = orderQuery.filter(status='3')
         if request.query_params_format.get("orderid"):
             orderQuery = orderQuery.filter(orderid=request.query_params_format.get("orderid"))
 
@@ -262,12 +271,17 @@ class OrderAPIView(viewsets.ViewSet):
 
 
 
-        query=orderQuery.exclude(status='8').order_by('-createtime')
-
+        query=orderQuery.order_by('-createtime')
 
         return {
             "data":OrderModelSerializer(query[page_start:page_end],many=True).data
         }
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
+    def OrderConfirm(self, request):
+        Order.objects.filter(orderid=request.data_format.get("orderid")).update(status='3')
+        return None
 
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
