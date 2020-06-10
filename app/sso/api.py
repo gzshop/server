@@ -160,7 +160,7 @@ class SsoAPIView(viewsets.ViewSet):
         mobile =request.data_format.get("mobile","")
         if not mobile:
             raise PubErrorCustom("手机号不能为空!")
-        vercode = random.randint(1000, 9999)
+        vercode = str(random.randint(1000, 9999))
         sendMsg(mobile,vercode)
         RedisVercodeHandler().set(mobile,vercode)
         return {"data":vercode}
