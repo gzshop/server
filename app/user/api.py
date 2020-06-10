@@ -2,7 +2,7 @@
 from project.config_include.common import ServerUrl
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
-
+from lib.utils.mytime import send_toTimestamp
 from lib.core.decorator.response import Core_connector
 from lib.utils.exceptions import PubErrorCustom
 
@@ -32,11 +32,36 @@ class UserAPIView(viewsets.ViewSet):
         }}
 
     @list_route(methods=['GET'])
-    @Core_connector(isTicket=True,isPasswd=True,isPagination=True)
+    @Core_connector(isTicket=True,isPasswd=True)
     def getUser(self, request):
-        query = Users.objects.filter(rolecode__startswith='4').order_by('-createtime')
 
-        return {"data": UsersModelSerializer(query,many=True).data}
+        query = Users.objects.filter(rolecode__startswith='4')
+        if request.query_params_format.get("userid"):
+            query = query.filter(userid=request.query_params_format.get("userid"))
+
+        if request.query_params_format.get("mobile"):
+            query = query.filter(mobile=request.query_params_format.get("mobile"))
+
+        if request.query_params_format.get("startdate") and request.query_params_format.get("enddate"):
+            query = query.filter(
+                createtime__lte=send_toTimestamp(request.query_params_format.get("enddate")),
+                createtime__gte=send_toTimestamp(request.query_params_format.get("startdate")))
+
+        page = int(request.query_params_format.get("page", 1))
+
+        page_size = request.query_params_format.get("page_size", 10)
+        page_start = page_size * page - page_size
+        page_end = page_size * page
+
+        res = query.order_by('-createtime')
+        headers = {
+            'Total': res.count(),
+        }
+
+        return {
+            "data": UsersModelSerializer(res[page_start:page_end], many=True).data,
+            "header": headers
+        }
 
     @list_route(methods=['POST'])
     @Core_connector(isTicket=True,isPasswd=True,isTransaction=True)

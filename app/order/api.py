@@ -369,11 +369,17 @@ class OrderAPIView(viewsets.ViewSet):
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
     def orderFh(self,request):
-        orders = Order.objects.filter(orderid__in=request.data_format.get("orders"))
-        for item in orders:
-            item.fhstatus = '0'
-            item.save()
-
+        orderid = request.data_format.get("orderid")
+        kdno = request.data_format.get("kdno")
+        if not kdno:
+            raise PubErrorCustom("快递单号不能为空!")
+        try:
+            obj = Order.objects.get(orderid=orderid)
+            obj.kdno = kdno
+            obj.status='2'
+            obj.save()
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单不存在!")
         return None
 
     @list_route(methods=['POST'])

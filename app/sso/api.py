@@ -110,7 +110,7 @@ class SsoAPIView(viewsets.ViewSet):
     def login(self, request):
 
         try:
-            user = Users.objects.get(uuid=request.data_format.get('username'))
+            user = Users.objects.get(uuid=request.data_format.get('username'),rolecode__in=['1000','1001'])
         except Users.DoesNotExist:
             raise PubErrorCustom("登录账户错误！")
 

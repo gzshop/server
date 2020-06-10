@@ -50,6 +50,7 @@ class OrderModelSerializer(serializers.ModelSerializer):
     status_format = serializers.SerializerMethodField()
 
     amount = serializers.DecimalField(max_digits=16,decimal_places=2)
+    yf = serializers.DecimalField(max_digits=16,decimal_places=2)
     payamount = serializers.DecimalField(max_digits=16,decimal_places=2)
     balamount = serializers.DecimalField(max_digits=16,decimal_places=2)
 
@@ -87,7 +88,18 @@ class OrderModelSerializer(serializers.ModelSerializer):
         return json.loads(obj.address)
 
     def get_status_format(self,obj):
-        return "已付款" if obj.status=='1' else '待付款'
+        if obj.status=='0':
+            return "待付款"
+        elif obj.status=='1':
+            return "已付款(待发货)"
+        elif obj.status=='2':
+            return "已发货(待收货)"
+        elif obj.status=='3':
+            return "已收货"
+        elif obj.status=='9':
+            return "取消订单"
+        else:
+            return "未知"
 
     def get_fhstatus_format(self,obj):
         return "已发货" if obj.fhstatus=='0' else '待发货'
