@@ -2,7 +2,7 @@
 import json
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
-
+from django.db.models import Q
 from django.db import transaction
 from django.http import HttpResponse
 from lib.core.decorator.response import Core_connector
@@ -151,12 +151,15 @@ class OrderAPIView(viewsets.ViewSet):
                 gdimg=json.loads(goods.gdimg)[0],
                 gdname=goods.gdname,
                 gdprice=glink.price,
-                gdnum=item.get("number")
+                gdnum=item.get("number"),
+                skugoodslinkid=glink.id,
+                skugoodslabel = item.get("spec")
             ))
 
             orderObj.linkid['linkids'].append(link.linkid)
             orderObj.amount += link.gdprice * int(link.gdnum)
 
+        orderObj.amount += orderObj.yf
         orderObj.linkid=json.dumps(orderObj.linkid)
         orderObj.save()
 
@@ -307,10 +310,14 @@ class OrderAPIView(viewsets.ViewSet):
     def OrderGet(self, request):
 
         orderQuery = Order.objects.filter(userid=request.user['userid'])
-
-        if request.query_params_format.get("status"):
-            orderQuery = orderQuery.filter(status=request.query_params_format.get("status"))
-
+        status=request.query_params_format.get("status")
+        if status:
+            if status == 1:
+                orderQuery = orderQuery.filter(status='0')
+            elif status == 2:
+                orderQuery = orderQuery.filter(status='1')
+            elif status == 3:
+                orderQuery = orderQuery.filter(status='9')
         if request.query_params_format.get("orderid"):
             orderQuery = orderQuery.filter(orderid=request.query_params_format.get("orderid"))
 
@@ -320,17 +327,26 @@ class OrderAPIView(viewsets.ViewSet):
         page_start = page_size * page  - page_size
         page_end = page_size * page
 
-        try:
-            user = Users.objects.get(userid=request.user.get("userid"))
-        except Users.DoesNotExist:
-            raise PubErrorCustom("用户不存在!")
+
+
+        query=orderQuery.exclude(status='8').order_by('-createtime')
+
 
         return {
-            "data":{
-                "order":OrderModelSerializer(orderQuery.order_by('-createtime')[page_start:page_end],many=True).data,
-                "bal": "%.2lf"%user.bal
-            }
+            "data":OrderModelSerializer(query[page_start:page_end],many=True).data
         }
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
+    def OrderCanle(self, request):
+        Order.objects.filter(orderid=request.data_format.get("orderid")).update(status='9')
+        return None
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
+    def OrderDel(self, request):
+        Order.objects.filter(orderid=request.data_format.get("orderid")).update(status='8')
+        return None
 
     @list_route(methods=['GET'])
     @Core_connector(isPasswd=True,isTicket=True)

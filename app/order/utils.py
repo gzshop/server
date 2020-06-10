@@ -226,7 +226,7 @@ class AlipayBase(object):
             app_private_key_string=AliPay_alipay_private_key,
             alipay_public_key_string=AliPay_alipay_public_key,
             sign_type="RSA2",
-            debug=True,  # 上线则改为False , 沙箱True
+            debug=False,  # 上线则改为False , 沙箱True
         )
 
     def create(self,order_id,amount):

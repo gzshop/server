@@ -60,6 +60,17 @@ class OrderModelSerializer(serializers.ModelSerializer):
     fhstatus_format = serializers.SerializerMethodField()
 
     address = serializers.SerializerMethodField()
+    state = serializers.SerializerMethodField()
+
+
+    payamount1 = serializers.SerializerMethodField()
+
+
+    def get_state(self,obj):
+        return obj.status
+
+    def get_payamount1(self,obj):
+        return round(obj.amount + obj.yf,2)
 
     def get_isthm_format(self,obj):
         return '是' if obj.isthm=='0' else '否'

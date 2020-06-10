@@ -54,6 +54,9 @@ class OrderGoodsLink(models.Model):
     gdprice = models.DecimalField(max_digits=18,decimal_places=6,default=0.000,verbose_name="商品价格")
     gdnum  = models.IntegerField(verbose_name="商品数量",default=0)
 
+    skugoodslinkid = models.IntegerField(verbose_name="商品sku关联表id",default=0)
+    skugoodslabel = models.CharField(max_length=60,verbose_name="说明")
+
     createtime = models.BigIntegerField(default=0)
     updtime = models.BigIntegerField(default=0)
 
@@ -88,7 +91,7 @@ class Order(models.Model):
     balamount = models.DecimalField(verbose_name="余额支付金额",max_digits=18,decimal_places=6,default=0.0)
     memo = models.CharField(max_length=255,verbose_name="备注",default="")
 
-    status = models.CharField(max_length=1,verbose_name="状态,0-待付款,1-已付款",default="0")
+    status = models.CharField(max_length=1,verbose_name="状态,0-待付款,1-已付款,9-取消订单,8-已删除",default="0")
     fhstatus = models.CharField(max_length=1,verbose_name="0-已发货,1-未发货",default="1")
     paymsg = models.TextField(default="")
     address = models.TextField(default="{}")
