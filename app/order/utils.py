@@ -7,7 +7,7 @@ import xmltodict
 from decimal import *
 
 from project.config_include.params import WECHAT_PAY_KEY,WECHAT_APPID,CALLBACKURL,WECHAT_PAY_MCHID,WECHAT_PAY_RETURN_KEY,\
-    AliPay_Appid,AliPay_alipay_private_key,AliPay_alipay_public_key,AliPay_way
+    AliPay_Appid,AliPay_app_private_key,AliPay_alipay_public_key,AliPay_way,Alipay_callbackUrl
 from lib.utils.exceptions import PubErrorCustom
 from app.order.models import Order
 from app.user.models import Users
@@ -213,17 +213,17 @@ class AlipayBase(object):
 
     def __init__(self):
 
-        print(AliPay_alipay_private_key)
-
-
-        print(AliPay_alipay_public_key)
-
-        print(AliPay_Appid)
+        # print(AliPay_alipay_private_key)
+        #
+        #
+        # print(AliPay_alipay_public_key)
+        #
+        # print(AliPay_Appid)
 
         self.alipay = AliPay(
             appid=AliPay_Appid,
-            app_notify_url=None,  # 默认回调url
-            app_private_key_string=AliPay_alipay_private_key,
+            app_notify_url=Alipay_callbackUrl,
+            app_private_key_string=AliPay_app_private_key,
             alipay_public_key_string=AliPay_alipay_public_key,
             sign_type="RSA2",
             debug=False,  # 上线则改为False , 沙箱True

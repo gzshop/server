@@ -289,6 +289,12 @@ class OrderAPIView(viewsets.ViewSet):
                                     <return_msg><![CDATA[Signature_Error]]></return_msg></xml>""",
                                          content_type = 'text/xml', status = 200)
 
+
+    @list_route(methods=['POST','GET'])
+    def alipayCallback(self,request):
+        print(request.data)
+        print(request.query_params)
+
     @list_route(methods=['GET'])
     @Core_connector(isPasswd=True,isTicket=True)
     def getCardForOrder(self, request):
@@ -363,6 +369,9 @@ class OrderAPIView(viewsets.ViewSet):
         queryClass = Order.objects.filter()
 
         return {"data":OrderModelSerializer(queryClass.order_by('-createtime'),many=True).data}
+    
+    
+
 
 
     @list_route(methods=['POST'])
