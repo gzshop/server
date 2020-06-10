@@ -1,13 +1,13 @@
 
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
-
+import random
 from lib.core.decorator.response import Core_connector
 from lib.utils.exceptions import PubErrorCustom
 from lib.utils.db import RedisTokenHandler,RedisVercodeHandler
 from lib.utils.string_extension import get_token
 from lib.utils.http_request import send_request_other
-
+from app.sso.utils import sendMsg
 from app.user.models import Users
 from app.user.serialiers import UsersSerializers
 from app.cache.serialiers import UserModelSerializerToRedis
@@ -157,12 +157,13 @@ class SsoAPIView(viewsets.ViewSet):
     @Core_connector(isPasswd=True)
     def getVercode(self,request, *args, **kwargs):
 
-
-        vercode = "111111"
-        RedisVercodeHandler().set(request.data_format.get("mobile",""),vercode)
-
-
-        return {"data":"111111"}
+        mobile =request.data_format.get("mobile","")
+        if not mobile:
+            raise PubErrorCustom("手机号不能为空!")
+        vercode = random.randint(1000, 9999)
+        sendMsg(mobile,vercode)
+        RedisVercodeHandler().set(mobile,vercode)
+        return {"data":vercode}
 
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True,isPasswd=True)

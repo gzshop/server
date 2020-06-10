@@ -18,6 +18,11 @@ CALLBACKURL = "{}{}".format(APIURL,"/order/txPayCallback")
 COS_secret_id = os.getenv("COS_secret_id","")
 COS_secret_key = os.getenv("COS_secret_key","")
 
+#短信
+Tx_Sms_secretId = os.getenv("Tx_Sms_secretId","")
+Tx_Sms_secretKey = os.getenv("Tx_Sms_secretKey","")
+
+
 #物流
 FASTMAIL_Key = os.getenv("FASTMAIL_Key","ba89e3a3-54d2-413b-98f1-13402e3a9f78")
 
