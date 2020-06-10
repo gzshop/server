@@ -100,8 +100,11 @@ class GoodsForSearchSerializer(serializers.Serializer):
     gdid = serializers.CharField()
     gdname = serializers.CharField()
     gdprice = serializers.DecimalField(max_digits=16,decimal_places=2)
-    gdimg = serializers.CharField()
+    gdimg = serializers.SerializerMethodField()
     gdtext = serializers.CharField()
+
+    def get_gdimg(self,obj):
+        return json.loads(obj.gdimg)
 
 
 class CardModelSerializer(serializers.ModelSerializer):
