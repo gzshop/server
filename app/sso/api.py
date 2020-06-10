@@ -190,7 +190,8 @@ class SsoAPIView(viewsets.ViewSet):
         res = UserModelSerializerToRedis(user, many=False).data
         RedisTokenHandler(key=token).redis_dict_set(res)
 
-        address = AddressModelSerializer(Address.objects.filter(userid=user.userid,moren='0')[0], many=False).data
+        res=Address.objects.filter(userid=user.userid,moren='0')
+        address = AddressModelSerializer(res, many=True).data[0] if res.count() else {}
 
         return {"data": {
             "token": token,
