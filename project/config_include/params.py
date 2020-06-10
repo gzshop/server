@@ -21,6 +21,7 @@ COS_secret_key = os.getenv("COS_secret_key","")
 """
 支付宝支付
 """
+AliPay_signature = os.getenv("AliPay_signature","")
 AliPay_Appid = os.getenv("AliPay_Appid","")
 Alipay_callbackUrl = os.getenv("Alipay_callbackUrl","")
 AliPay_app_private_key = os.getenv("AliPay_app_private_key","")

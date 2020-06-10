@@ -190,88 +190,6 @@ class OrderAPIView(viewsets.ViewSet):
 
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
-    def OrderPaysByOrder(self, request):
-
-        if not request.data_format.get('orderid',None):
-            raise PubErrorCustom("订单号为空!")
-
-        try:
-            user = Users.objects.select_for_update().get(userid=request.user.get("userid"))
-        except Users.DoesNotExist:
-            raise PubErrorCustom("用户不存在!")
-
-        try:
-            order = Order.objects.select_for_update().get(orderid=request.data_format.get('orderid',None))
-            order.address = json.dumps(request.data_format.get('address',{}))
-            order.memo = request.data_format.get("memo","")
-            if order.status=='1':
-                raise PubErrorCustom("此订单已付款!")
-        except Order.DoesNotExist:
-            raise PubErrorCustom("订单异常!")
-
-        for item in OrderGoodsLink.objects.filter(linkid__in=json.loads(order.linkid)['linkids']).order_by("-updtime"):
-            #是虚拟商品
-            if item.virtual == '0':
-                cards = Cardvirtual.objects.filter(gdid=item.gdid,status='1').order_by('createtime')
-                if cards.exists():
-                    if len(cards) < item.gdnum:
-                        raise PubErrorCustom("暂无存货!")
-
-                    virtualids = json.loads(item.virtualids)
-                    count = 0
-                    for card in cards:
-                        count +=1
-                        virtualids['ids'].append({"id":card.id,"account":card.account,"password":card.account})
-                        card.status = '0'
-                        card.useuserid = user.userid
-                        card.save()
-                        if count == item.gdnum:
-                            break
-                    item.virtualids = json.dumps(virtualids)
-                    item.save()
-                else:
-                    raise PubErrorCustom("暂无存货!")
-
-        amount = Decimal(str(order.amount))
-
-        order.balamount = 0.0
-        order.payamount = 0.0
-
-        if request.data_format.get('usebal'):
-            if user.bal >= amount:
-                tmp = user.bal
-                user.bal -= amount
-                order.balamount = amount
-                order.status = '1'
-                if order.isvirtual == '0':
-                    order.fhstatus = '0'
-                updBalList(user, order, order.amount, tmp, user.bal, "余额支付")
-                user.save()
-                order.save()
-                return {"data":{"usebalall":True}}
-            else:
-                print(user.bal,amount)
-                amount -= user.bal
-                print(amount)
-                order.balamount = user.bal
-                order.payamount = amount
-                order.save()
-        else:
-            order.payamount = amount
-            order.save()
-        print(amount)
-        #request.META.get("HTTP_X_REAL_IP"),
-        data = wechatPay().request({
-            "out_trade_no" : order.orderid,
-            "total_fee" : int(amount * 100),
-            "spbill_create_ip" : request.META.get("HTTP_X_REAL_IP"),
-            "openid": user.uuid
-        })
-
-        return {"data":data}
-
-    @list_route(methods=['POST'])
-    @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
     def txPayOrderQuery(self, request):
 
         return wechatPay().orderQuery(request.data_format['orderid'])
@@ -292,8 +210,17 @@ class OrderAPIView(viewsets.ViewSet):
 
     @list_route(methods=['POST','GET'])
     def alipayCallback(self,request):
-        print(request.data)
-        print(request.query_params)
+        try:
+            if request.method == "POST":
+                with transaction.atomic():
+                    AlipayBase().callback(request.data)
+                    return HttpResponse('success')
+            else:
+                with transaction.atomic():
+                    AlipayBase().callback(request.query_params)
+                    return HttpResponse('success')
+        except Exception:
+            return HttpResponse('error!')
 
     @list_route(methods=['GET'])
     @Core_connector(isPasswd=True,isTicket=True)

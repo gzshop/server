@@ -240,3 +240,25 @@ class AlipayBase(object):
         print(order_string)
         return order_string
 
+    def callback(self,data):
+
+        iData = dict()
+        for item in data:
+            iData[item] = data[item]
+
+        sign = iData.pop("sign",None)
+        if not self.alipay.verify(iData,sign):
+            print(iData)
+            raise PubErrorCustom("验签失败!")
+
+        if iData.get("trade_status",None) != 'TRADE_SUCCESS':
+            print(iData)
+            raise PubErrorCustom("交易状态异常!")
+
+        try:
+            orderObj = Order.objects.select_for_update().get(orderid=iData.get("out_trade_no",""))
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单不存在!")
+
+        orderObj.status = '1'
+        orderObj.save()
