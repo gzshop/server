@@ -163,7 +163,7 @@ class SsoAPIView(viewsets.ViewSet):
         vercode = str(random.randint(1000, 9999))
         sendMsg(mobile,vercode)
         RedisVercodeHandler().set(mobile,vercode)
-        return {"data":vercode}
+        return None
 
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True,isPasswd=True)
