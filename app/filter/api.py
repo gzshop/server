@@ -95,17 +95,17 @@ class FilterAPIView(viewsets.ViewSet):
                     goodslinksku=GoodsLinkSkuSearchSerializer(GoodsLinkSku.objects.filter(gdid=res['gdid']).order_by('sort'),many=True).data
                 )
 
-            if data['yf'] == '0':
+            if res['yf'] == '0':
                 data['yf'] = 5.0
-            elif data['yf'] == '1':
+            elif res['yf'] == '1':
                 data['yf'] = 10.0
-            elif data['yf'] == '2':
+            elif res['yf'] == '2':
                 data['yf'] = 18.0
-            elif data['yf'] == '3':
+            elif res['yf'] == '3':
                 data['yf'] = 36.0
-            elif data['yf'] == '4':
+            elif res['yf'] == '4':
                 data['yf'] = 55.0
-            elif data['yf'] == '5':
+            elif res['yf'] == '5':
                 data['yf'] = 0.0
             else:
                 data['yf'] = 55.0
