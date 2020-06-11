@@ -120,9 +120,9 @@ class GoodsAPIView(viewsets.ViewSet):
                 valueid2=item.get("specValueId2",0),
                 valueid3=item.get("specValueId3",0),
                 stock = item['active_num'],
-                code = item['sku_code'],
-                cost_price = item['origin_price'],
-                number = item['sale_num'],
+                code = item.get("sku_code",""),
+                cost_price = item.get("origin_price",0.0),
+                number = item.get('sale_num',0),
                 sort = item['sortNum']
             ))
 
