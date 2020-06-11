@@ -92,6 +92,7 @@ class FilterAPIView(viewsets.ViewSet):
                     gdname = res['gdname'],
                     gdprice = res['gdprice'],
                     detail = res['detail'],
+                    yf=res['yf'],
                     gdsku=res['gdsku'],
                     goodslinksku=GoodsLinkSkuSearchSerializer(GoodsLinkSku.objects.filter(gdid=res['gdid']).order_by('sort'),many=True).data
                 )
