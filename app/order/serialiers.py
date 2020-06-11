@@ -62,7 +62,7 @@ class OrderModelSerializer(serializers.ModelSerializer):
 
     address = serializers.SerializerMethodField()
     state = serializers.SerializerMethodField()
-
+    mobile = serializers.CharField()
 
     payamount1 = serializers.SerializerMethodField()
 

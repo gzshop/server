@@ -107,6 +107,9 @@ class Order(models.Model):
     kdno = models.CharField(max_length=60,verbose_name="快递单号",default="")
     kdname = models.CharField(max_length=60,verbose_name="快递公司简称",default="")
 
+
+    mobile = None
+
     def save(self, *args, **kwargs):
 
         if not self.orderid:

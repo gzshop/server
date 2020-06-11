@@ -80,38 +80,37 @@ class FilterWebAPIView(viewsets.ViewSet):
     @Core_connector(isPasswd=True, isTicket=True)
     def OrderGetWeb(self, request):
 
-        orderQuery = Order.objects.filter()
+        query_format = str()
 
         if request.query_params_format.get("status"):
-            orderQuery = orderQuery.filter(status=request.query_params_format.get("status"))
-
-        if request.query_params_format.get("fhstatus"):
-            orderQuery = orderQuery.filter(fhstatus=request.query_params_format.get("fhstatus"))
-
-        if request.query_params_format.get("userid"):
-            orderQuery = orderQuery.filter(userid=request.query_params_format.get("userid"))
-
+            query_format = query_format + " and t1.status={}".format(request.query_params_format.get("status"))
         if request.query_params_format.get("orderid"):
-            orderQuery = orderQuery.filter(orderid=request.query_params_format.get("orderid"))
-
+            query_format = query_format + " and t1.orderid={}".format(request.query_params_format.get("orderid"))
         if request.query_params_format.get("startdate") and request.query_params_format.get("enddate"):
-            orderQuery = orderQuery.filter(
-                createtime__lte=send_toTimestamp(request.query_params_format.get("enddate")),
-                createtime__gte=send_toTimestamp(request.query_params_format.get("startdate")))
+            query_format = query_format + " and t1.createtime>={} and t1.createtime<={}".format(
+                send_toTimestamp(request.query_params_format.get("startdate")),
+                send_toTimestamp(request.query_params_format.get("enddate"))
+            )
+        if request.query_params_format.get("mobile"):
+            query_format = query_format + " and t2.mobile={}".format(request.query_params_format.get("mobile"))
+
+        orders = Order.objects.raw("""
+            SELECT t1.*,t2.mobile FROM `order` as t1
+            INNER JOIN user as t2 ON t1.userid=t2.userid
+            WHERE 1=1 %s order by t1.createtime desc
+        """%(query_format),[])
 
         page = int(request.query_params_format.get("page", 1))
-
         page_size = request.query_params_format.get("page_size", 10)
         page_start = page_size * page - page_size
         page_end = page_size * page
 
-        res=orderQuery.order_by('-createtime')
         headers = {
-            'Total': res.count(),
+            'Total': len(list(orders)),
         }
 
         return {
-            "data": OrderModelSerializer(res[page_start:page_end], many=True).data,
+            "data": OrderModelSerializer(orders[page_start:page_end], many=True).data,
             "header":headers
         }
 

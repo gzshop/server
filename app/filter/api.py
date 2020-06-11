@@ -84,19 +84,31 @@ class FilterAPIView(viewsets.ViewSet):
             must_key_value=request.query_params_format.get('gdid')
         ).run()
         if res['gdstatus'] == '0':
-            return {
-                "data":dict(
+            data=dict(
                     gdid = res['gdid'],
                     gdimg = res['gdimg'],
                     gdnum = res['gdnum'],
                     gdname = res['gdname'],
                     gdprice = res['gdprice'],
                     detail = res['detail'],
-                    yf=res['yf'],
                     gdsku=res['gdsku'],
                     goodslinksku=GoodsLinkSkuSearchSerializer(GoodsLinkSku.objects.filter(gdid=res['gdid']).order_by('sort'),many=True).data
                 )
-            }
+
+            if data['yf'] == '0':
+                data['yf'] = 5.0
+            elif data['yf'] == '1':
+                data['yf'] = 10.0
+            elif data['yf'] == '2':
+                data['yf'] = 18.0
+            elif data['yf'] == '3':
+                data['yf'] = 36.0
+            elif data['yf'] == '4':
+                data['yf'] = 55.0
+            elif data['yf'] == '5':
+                data['yf'] = 0.0
+            else:
+                data['yf'] = 55.0
         else:
             return {"data":False}
 

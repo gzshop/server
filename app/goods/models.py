@@ -91,8 +91,7 @@ class Goods(models.Model):
     product = models.TextField(default="")
     shbz = models.TextField(default="")
 
-    yf = models.CharField(max_length=1,verbose_name="邮费,0-5元/件,1-10元/件,2-18元/件,3-36元/件,4-55元/件",default='0')
-
+    yf = models.CharField(max_length=1,verbose_name="邮费,0-5元/件,1-10元/件,2-18元/件,3-36元/件,4-55元/件,5-包邮",default='0')
 
     limit_unit = models.CharField(max_length=1,verbose_name="限购周期单位,A-不限购,M-月,W-周",default="A")
     limit_count = models.IntegerField(verbose_name="限购周期值",default=0)
