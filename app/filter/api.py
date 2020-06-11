@@ -109,6 +109,7 @@ class FilterAPIView(viewsets.ViewSet):
                 data['yf'] = 0.0
             else:
                 data['yf'] = 55.0
+            return {"data":data}
         else:
             return {"data":False}
 
