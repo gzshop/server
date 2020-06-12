@@ -73,14 +73,14 @@ class OrderModelSerializer(serializers.ModelSerializer):
         if obj.before_status == '1':
             return " 申请退款中"
         elif obj.before_status == '3':
-            return " 申请退款拒绝"
+            return " 申请退款被拒绝"
         return ""
 
     def get_before_status_format(self,obj):
         if obj.before_status == '1':
             return " 申请退款中"
         elif obj.before_status == '3':
-            return " 申请退款拒绝"
+            return " 申请退款被拒绝"
         elif obj.before_status == '2':
             return "申请退款通过"
         return ""

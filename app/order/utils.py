@@ -252,7 +252,10 @@ class AlipayBase(object):
             refund_amount=str(refund_amount.quantize(Decimal('0.00'))),
             out_trade_no=orderid
         )
-        logger.info(response)
+        logger.info("退款信息->{}".format(response))
+        if response['code']!= '10000':
+            raise PubErrorCustom(response['msg'])
+
 
     def callback(self,data):
 
