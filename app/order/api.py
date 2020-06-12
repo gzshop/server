@@ -259,7 +259,7 @@ class OrderAPIView(viewsets.ViewSet):
             order.status = '4'
             order.save()
 
-            AlipayBase().refund(orderid=order.orderid, refund_amount=order.amount)
+            AlipayBase().refund(order=order,orderid=order.orderid, refund_amount=order.amount)
         except Order.DoesNotExist:
             raise PubErrorCustom("订单异常!")
 

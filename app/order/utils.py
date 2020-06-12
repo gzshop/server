@@ -246,7 +246,7 @@ class AlipayBase(object):
         print(order_string)
         return order_string
 
-    def refund(self,orderid,refund_amount):
+    def refund(self,order,orderid,refund_amount):
 
         response = self.alipay.api_alipay_trade_refund(
             refund_amount=str(refund_amount.quantize(Decimal('0.00'))),
@@ -255,6 +255,18 @@ class AlipayBase(object):
         logger.info("退款信息->{}".format(response))
         if response['code']!= '10000':
             raise PubErrorCustom(response['msg'])
+
+        try:
+            for item in OrderGoodsLink.objects.filter(linkid__in=json.loads(order.linkid)['linkids']):
+                try:
+                    glObj = GoodsLinkSku.objects.select_for_update().get(id=item.skugoodslinkid)
+                    glObj.stock += 1
+                    glObj.number -=1
+                    glObj.save()
+                except GoodsLinkSku.DoesNotExist:
+                    pass
+        except Exception as e:
+            print(str(e))
 
 
     def callback(self,data):
@@ -366,9 +378,6 @@ class fastMail(object):
         else:
             return response
 
-
-
-
 def calyf(yf_flag):
     if yf_flag == '0':
         return 5.0
@@ -385,7 +394,6 @@ def calyf(yf_flag):
     else:
         return 55.0
 
-
 def queryBuyOkGoodsCount(userid,gdid,start,end):
 
     query_format=" and t1.gdid='{}' and t2.userid={} and t2.createtime>={} and t2.createtime<={}".format(gdid,userid,start,end)
@@ -393,7 +401,8 @@ def queryBuyOkGoodsCount(userid,gdid,start,end):
     res =OrderGoodsLink.objects.raw("""
         SELECT sum(t1.gdnum) as linkid from `ordergoodslink` as t1
         INNER JOIN `order` as t2 ON t1.orderid = t2.orderid
-        WHERE t2.status in ('1','2','3') %s
+        WHERE t2.status in ('1','2','3') and t2.before_status!='2'  %s
     """%(query_format),[])
+    logger.info(res)
     res = list(res)
     return res[0].linkid if len(res) and res[0].linkid  else 0
