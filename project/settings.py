@@ -35,7 +35,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 APPEND_SLASH = False
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_EXPOSE_HEADERS = ['X-Total']
+CORS_EXPOSE_HEADERS = ['X-Total','X-App_Version']
 
 WSGI_ENV = os.environ.get("DEPLOY_MODE", "")
 # 运行模式， DEVELOP(开发模式)， PRODUCT(正式产品模式)
@@ -263,6 +263,7 @@ CORS_ALLOW_HEADERS = (
     'origin',
     'x-total',
     "ticket",
+    "app_version",
     'total',
     'user-agent',
     'x-csrftoken',
