@@ -243,7 +243,7 @@ class AlipayBase(object):
             return_url=None,
             notify_url=None,
         )
-        print(order_string)
+        logger.info(order_string)
         return order_string
 
     def refund(self,order,orderid,refund_amount):
