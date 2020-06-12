@@ -60,6 +60,9 @@ class OrderGoodsLink(models.Model):
     createtime = models.BigIntegerField(default=0)
     updtime = models.BigIntegerField(default=0)
 
+
+    count = None
+
     def save(self, *args, **kwargs):
 
         if not self.createtime:
@@ -91,7 +94,9 @@ class Order(models.Model):
     balamount = models.DecimalField(verbose_name="余额支付金额",max_digits=18,decimal_places=6,default=0.0)
     memo = models.CharField(max_length=255,verbose_name="备注",default="")
 
-    status = models.CharField(max_length=1,verbose_name="状态,0-待付款,1-已付款(待发货),2-已发货(待收货),3-已收货,9-取消订单,8-已删除",default="0")
+    before_status = models.CharField(max_length=1,verbose_name="状态,1-申请退款,2-已退款,3-拒绝退款",default="")
+    refundmsg = models.CharField(max_length=60,verbose_name="申请退款理由!",default="")
+    status = models.CharField(max_length=1,verbose_name="状态,0-待付款,1-已付款(待发货),2-已发货(待收货),3-已收货,4-已退款,9-取消订单,8-已删除",default="0")
     fhstatus = models.CharField(max_length=1,verbose_name="0-已发货,1-未发货",default="1")
     paymsg = models.TextField(default="")
     address = models.TextField(default="{}")
@@ -106,6 +111,9 @@ class Order(models.Model):
 
     kdno = models.CharField(max_length=60,verbose_name="快递单号",default="")
     kdname = models.CharField(max_length=60,verbose_name="快递公司简称",default="")
+
+
+    paytype = models.CharField(max_length=1,verbose_name="支付方式 2-支付宝",default='2')
 
 
     mobile = None

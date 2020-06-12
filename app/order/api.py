@@ -20,8 +20,9 @@ from app.order.models import Address
 
 from app.goods.models import Card,Cardvirtual,DeliveryCode,Goods,GoodsLinkSku
 
-from app.order.utils import wechatPay,updBalList,AlipayBase,fastMail
+from app.order.utils import wechatPay,updBalList,AlipayBase,fastMail,calyf,queryBuyOkGoodsCount
 from lib.utils.db import RedisTokenHandler
+from lib.utils.mytime import UtilTime
 
 class OrderAPIView(viewsets.ViewSet):
 
@@ -123,12 +124,13 @@ class OrderAPIView(viewsets.ViewSet):
 
         orderObj = Order.objects.create(**dict(
             userid=request.user['userid'],
-            yf=data['data'].get("yf"),
+            # yf=data['data'].get("yf"),
             address=json.dumps(data.get("address",{})),
             memo=data.get("memo","")
         ))
         orderObj.linkid={"linkids":[]}
         orderObj.amount = Decimal("0.0")
+        orderObj.yf = Decimal("0.0")
 
         for item in data['data']['goods']:
             try:
@@ -157,6 +159,7 @@ class OrderAPIView(viewsets.ViewSet):
 
             orderObj.linkid['linkids'].append(link.linkid)
             orderObj.amount += link.gdprice * int(link.gdnum)
+            orderObj.yf += Decimal(str(calyf(goods.yf)))
 
         orderObj.amount += orderObj.yf
         orderObj.linkid=json.dumps(orderObj.linkid)
@@ -168,24 +171,120 @@ class OrderAPIView(viewsets.ViewSet):
     @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
     def PayHandler(self, request):
 
-
         payType = request.data_format.get("payType",None)
         orderid = request.data_format.get("orderid",None)
-
-        try:
-            order = Order.objects.select_for_update().get(orderid=orderid)
-            if order.status=='1':
-                raise PubErrorCustom("此订单已付款!")
-        except Order.DoesNotExist:
-            raise PubErrorCustom("订单异常!")
 
         if not payType:
             raise PubErrorCustom("支付方式有误!")
 
+        ut = UtilTime()
+        end = ut.timestamp
+        try:
+            order = Order.objects.select_for_update().get(orderid=orderid)
+            if order.status=='1':
+                raise PubErrorCustom("此订单已付款!")
+
+            for item in OrderGoodsLink.objects.filter(linkid__in=json.loads(order.linkid)['linkids']):
+                try:
+                    goodsObj = Goods.objects.get(gdid=item.gdid)
+                    if goodsObj.limit_unit == 'M':
+                        start = ut.today.shift(months=goodsObj.limit_count*-1).timestamp
+                    elif goodsObj.limit_unit == 'W':
+                        start = ut.today.shift(weeks=goodsObj.limit_count*-1).timestamp
+
+                    okcount = queryBuyOkGoodsCount(order.userid,goodsObj.gdid,start,end)
+                    print("实际购买->{},规则数量->{}".format(okcount,goodsObj.limit_number))
+                    if okcount >= goodsObj.limit_number:
+                        raise PubErrorCustom("{},库存不够!".format(goodsObj.gdname))
+
+                except Goods.DoesNotExist:
+                    raise PubErrorCustom("商品{}已下架!".format(goodsObj.gdname))
+
+            order.paytype = str(payType)
+            order.save()
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单异常!")
+
         if payType == 2:
-            return {"data":AlipayBase().create(order.orderid,order.amount)}
+            return {"data":AlipayBase().create(order.orderid,order.amount+order.yf)}
         else:
             raise PubErrorCustom("支付方式有误!")
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
+    def RefundHandler(self, request):
+        """
+        申请退款
+        :param request:
+        :return:
+        """
+        orderid = request.data_format.get("orderid", None)
+        refundmsg = request.data_format.get("refundmsg", None)
+
+        if not refundmsg:
+            raise PubErrorCustom("理由不能为空!")
+
+        try:
+            order = Order.objects.select_for_update().get(orderid=orderid)
+            if order.status not in ['1','2','3']:
+                raise PubErrorCustom("只允许已付款的订单申请退款!")
+
+            if order.before_status == '1':
+                raise PubErrorCustom("请勿重复申请退款!")
+
+            if order.before_status == '2':
+                raise PubErrorCustom("已退款,请勿再申请退款!")
+
+            order.before_status = '1'
+            order.refundmsg = refundmsg
+            order.save()
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单异常!")
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
+    def RefundConfirmHandler(self, request):
+        """
+        退款确认
+        :param request:
+        :return:
+        """
+        orderid = request.data_format.get("orderid", None)
+
+        try:
+            order = Order.objects.select_for_update().get(orderid=orderid)
+            if order.before_status!='1':
+                raise PubErrorCustom("只允许通过已申请退款的订单!")
+            order.before_status = '2'
+            order.status = '4'
+            order.save()
+
+            AlipayBase().refund(orderid=order.orderid, refund_amount=order.amount + order.yf)
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单异常!")
+
+        return None
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True, isPasswd=True, isTicket=True)
+    def RefundConfirmCanleHandler(self, request):
+        """
+        退款拒绝
+        :param request:
+        :return:
+        """
+        orderid = request.data_format.get("orderid", None)
+
+        try:
+            order = Order.objects.select_for_update().get(orderid=orderid)
+            if order.before_status!='1':
+                raise PubErrorCustom("只允许通过已申请退款的订单!")
+            order.before_status = '3'
+            order.save()
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单异常!")
+
+        return None
 
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
@@ -259,7 +358,7 @@ class OrderAPIView(viewsets.ViewSet):
             elif status == 3:
                 orderQuery = orderQuery.filter(status='2')
             elif status == 4:
-                orderQuery = orderQuery.filter(status='3')
+                orderQuery = orderQuery.filter(status__in=['3','4'])
         if request.query_params_format.get("orderid"):
             orderQuery = orderQuery.filter(orderid=request.query_params_format.get("orderid"))
 
@@ -268,8 +367,6 @@ class OrderAPIView(viewsets.ViewSet):
         page_size = request.query_params_format.get("page_size",10)
         page_start = page_size * page  - page_size
         page_end = page_size * page
-
-
 
         query=orderQuery.order_by('-createtime')
 
@@ -310,9 +407,6 @@ class OrderAPIView(viewsets.ViewSet):
         queryClass = Order.objects.filter()
 
         return {"data":OrderModelSerializer(queryClass.order_by('-createtime'),many=True).data}
-    
-    
-
 
 
     @list_route(methods=['POST'])

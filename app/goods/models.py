@@ -86,7 +86,6 @@ class Goods(models.Model):
     createtime = models.BigIntegerField(default=0)
     updtime = models.BigIntegerField(default=0)
 
-
     detail = models.TextField(default="")
     product = models.TextField(default="")
     shbz = models.TextField(default="")
@@ -96,7 +95,6 @@ class Goods(models.Model):
     limit_unit = models.CharField(max_length=1,verbose_name="限购周期单位,A-不限购,M-月,W-周",default="A")
     limit_count = models.IntegerField(verbose_name="限购周期值",default=0)
     limit_number = models.IntegerField(verbose_name="限购数量",default=0)
-
 
     def save(self, *args, **kwargs):
 

@@ -15,6 +15,7 @@ from app.goods.serialiers import GoodsForSearchSerializer,GoodsLinkSkuSearchSeri
 from app.order.serialiers import AddressModelSerializer
 
 from lib.utils.db import RedisTokenHandler
+from app.order.utils import calyf
 
 from app.public.serialiers import SysparamsModelSerializer,Sysparams
 
@@ -95,20 +96,8 @@ class FilterAPIView(viewsets.ViewSet):
                     goodslinksku=GoodsLinkSkuSearchSerializer(GoodsLinkSku.objects.filter(gdid=res['gdid']).order_by('sort'),many=True).data
                 )
 
-            if res['yf'] == '0':
-                data['yf'] = 5.0
-            elif res['yf'] == '1':
-                data['yf'] = 10.0
-            elif res['yf'] == '2':
-                data['yf'] = 18.0
-            elif res['yf'] == '3':
-                data['yf'] = 36.0
-            elif res['yf'] == '4':
-                data['yf'] = 55.0
-            elif res['yf'] == '5':
-                data['yf'] = 0.0
-            else:
-                data['yf'] = 55.0
+            data['yf'] = calyf(res['yf'])
+
             return {"data":data}
         else:
             return {"data":False}

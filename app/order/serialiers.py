@@ -54,6 +54,9 @@ class OrderModelSerializer(serializers.ModelSerializer):
     payamount = serializers.DecimalField(max_digits=16,decimal_places=2)
     balamount = serializers.DecimalField(max_digits=16,decimal_places=2)
 
+    bstatusformat = serializers.SerializerMethodField()
+    before_status_format = serializers.SerializerMethodField()
+
     isthm_format = serializers.SerializerMethodField()
 
     createtime_format = serializers.SerializerMethodField()
@@ -66,7 +69,21 @@ class OrderModelSerializer(serializers.ModelSerializer):
 
     payamount1 = serializers.SerializerMethodField()
 
+    def get_bstatusformat(self,obj):
+        if obj.before_status == '1':
+            return " 申请退款中"
+        elif obj.before_status == '3':
+            return " 申请退款拒绝"
+        return ""
 
+    def get_before_status_format(self,obj):
+        if obj.before_status == '1':
+            return " 申请退款中"
+        elif obj.before_status == '3':
+            return " 申请退款拒绝"
+        elif obj.before_status == '2':
+            return "申请退款通过"
+        return ""
     def get_state(self,obj):
         return obj.status
 
@@ -96,6 +113,8 @@ class OrderModelSerializer(serializers.ModelSerializer):
             return "已发货(待收货)"
         elif obj.status=='3':
             return "已收货"
+        elif obj.status=='4':
+            return "已退款"
         elif obj.status=='9':
             return "取消订单"
         else:

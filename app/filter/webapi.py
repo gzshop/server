@@ -84,6 +84,8 @@ class FilterWebAPIView(viewsets.ViewSet):
 
         if request.query_params_format.get("status"):
             query_format = query_format + " and t1.status={}".format(request.query_params_format.get("status"))
+        if request.query_params_format.get("before_status"):
+            query_format = query_format + " and t1.before_status={}".format(request.query_params_format.get("before_status"))
         if request.query_params_format.get("orderid"):
             query_format = query_format + " and t1.orderid={}".format(request.query_params_format.get("orderid"))
         if request.query_params_format.get("startdate") and request.query_params_format.get("enddate"):

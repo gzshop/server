@@ -5,11 +5,13 @@ import hashlib
 import json
 import xmltodict
 from decimal import *
+from lib.utils.log import logger
 
 from project.config_include.params import WECHAT_PAY_KEY,WECHAT_APPID,CALLBACKURL,WECHAT_PAY_MCHID,WECHAT_PAY_RETURN_KEY,\
     AliPay_Appid,AliPay_app_private_key,AliPay_alipay_public_key,AliPay_way,Alipay_callbackUrl,FASTMAIL_Key
 from lib.utils.exceptions import PubErrorCustom
-from app.order.models import Order
+from app.order.models import Order,OrderGoodsLink
+from app.goods.models import GoodsLinkSku
 from app.user.models import Users
 from app.user.models import BalList
 from alipay import AliPay
@@ -233,6 +235,7 @@ class AlipayBase(object):
         )
 
     def create(self,order_id,amount):
+        print(order_id,amount)
         order_string = self.alipay.api_alipay_trade_app_pay(
             out_trade_no=order_id,
             total_amount=str(amount.quantize(Decimal('0.00'))),
@@ -242,6 +245,14 @@ class AlipayBase(object):
         )
         print(order_string)
         return order_string
+
+    def refund(self,orderid,refund_amount):
+
+        response = self.alipay.api_alipay_trade_refund(
+            refund_amount=str(refund_amount.quantize(Decimal('0.00'))),
+            out_trade_no=orderid
+        )
+        logger.info(response)
 
     def callback(self,data):
 
@@ -265,6 +276,18 @@ class AlipayBase(object):
 
         orderObj.status = '1'
         orderObj.save()
+
+        try:
+            for item in OrderGoodsLink.objects.filter(linkid__in=json.loads(orderObj.linkid)['linkids']):
+                try:
+                    glObj = GoodsLinkSku.objects.select_for_update().get(id=item.skugoodslinkid)
+                    glObj.stock -= 1
+                    glObj.number +=1
+                    glObj.save()
+                except GoodsLinkSku.DoesNotExist:
+                    pass
+        except Exception as e:
+            print(str(e))
 
 
 class fastMail(object):
@@ -341,3 +364,33 @@ class fastMail(object):
             return response
 
 
+
+
+def calyf(yf_flag):
+    if yf_flag == '0':
+        return 5.0
+    elif yf_flag == '1':
+        return 10.0
+    elif yf_flag == '2':
+        return 18.0
+    elif yf_flag == '3':
+        return 36.0
+    elif yf_flag == '4':
+        return  55.0
+    elif yf_flag == '5':
+        return 0.0
+    else:
+        return 55.0
+
+
+def queryBuyOkGoodsCount(userid,gdid,start,end):
+
+    query_format=" and t1.gdid='{}' and t2.userid={} and t2.createtime>={} and t2.createtime<={}".format(gdid,userid,start,end)
+
+    res =OrderGoodsLink.objects.raw("""
+        SELECT sum(t1.gdnum) as linkid from `ordergoodslink` as t1
+        INNER JOIN `order` as t2 ON t1.orderid = t2.orderid
+        WHERE t2.status in ('1','2','3') %s
+    """%(query_format),[])
+    res = list(res)
+    return res[0].linkid if len(res) and res[0].linkid  else 0
