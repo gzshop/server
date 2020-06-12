@@ -194,7 +194,7 @@ class OrderAPIView(viewsets.ViewSet):
 
                     okcount = queryBuyOkGoodsCount(order.userid,goodsObj.gdid,start,end)
                     logger.info("目前购买->{},实际已购买->{},规则数量->{}".format(item.gdnum,okcount,goodsObj.limit_number))
-                    if item.gdnum+okcount >= goodsObj.limit_number:
+                    if item.gdnum+okcount > goodsObj.limit_number:
                         raise PubErrorCustom("{},库存不够!".format(goodsObj.gdname))
 
                 except Goods.DoesNotExist:
