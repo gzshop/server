@@ -17,7 +17,7 @@ from app.user.serialiers import UsersSerializers
 
 from app.order.serialiers import OrderModelSerializer,AddressModelSerializer,OrderGoodsLinkModelSerializer
 from app.order.models import Address
-
+from lib.utils.log import logger
 from app.goods.models import Card,Cardvirtual,DeliveryCode,Goods,GoodsLinkSku
 
 from app.order.utils import wechatPay,updBalList,AlipayBase,fastMail,calyf,queryBuyOkGoodsCount
@@ -193,8 +193,8 @@ class OrderAPIView(viewsets.ViewSet):
                         start = ut.today.shift(weeks=goodsObj.limit_count*-1).timestamp
 
                     okcount = queryBuyOkGoodsCount(order.userid,goodsObj.gdid,start,end)
-                    print("实际购买->{},规则数量->{}".format(okcount,goodsObj.limit_number))
-                    if okcount >= goodsObj.limit_number:
+                    logger.info("目前购买->{},实际已购买->{},规则数量->{}".format(item.gdnum,okcount,goodsObj.limit_number))
+                    if item.gdnum+okcount >= goodsObj.limit_number:
                         raise PubErrorCustom("{},库存不够!".format(goodsObj.gdname))
 
                 except Goods.DoesNotExist:
