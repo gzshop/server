@@ -206,7 +206,7 @@ class OrderAPIView(viewsets.ViewSet):
             raise PubErrorCustom("订单异常!")
 
         if payType == 2:
-            return {"data":AlipayBase().create(order.orderid,order.amount+order.yf)}
+            return {"data":AlipayBase().create(order.orderid,order.amount)}
         else:
             raise PubErrorCustom("支付方式有误!")
 
@@ -259,7 +259,7 @@ class OrderAPIView(viewsets.ViewSet):
             order.status = '4'
             order.save()
 
-            AlipayBase().refund(orderid=order.orderid, refund_amount=order.amount + order.yf)
+            AlipayBase().refund(orderid=order.orderid, refund_amount=order.amount)
         except Order.DoesNotExist:
             raise PubErrorCustom("订单异常!")
 
