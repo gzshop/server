@@ -208,7 +208,7 @@ class RedisAppHandler(RedisHandler):
         res = self.get()
         print("上传版本号{},系统版本{}".format(version,res))
         logger.info("上传版本号{},系统版本{}".format(version,res))
-        if res and version and int(res['version']) <= int(version):
+        if res and version and int(res['version']) > int(version):
             return res
         else:
             return None
