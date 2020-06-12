@@ -182,6 +182,16 @@ first = [
         "icon": 'el-icon-setting',
         "children": [
             {
+                "label": "app版本管理",
+                "path": 'appHandler',
+                "component": 'views/systemManagement/appHandler',
+                "meta": {
+                    "i18n": 'appHandler'
+                },
+                "icon": 'el-icon-setting',
+                "children": []
+            },
+            {
                 "label": "缓存管理",
                 "path": 'Cache',
                 "component": 'views/systemManagement/Cache',

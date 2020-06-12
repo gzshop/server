@@ -21,19 +21,15 @@ class FileAPIView(viewsets.ViewSet):
         img_type = file_obj.name.split('.')[1]
         img_type = img_type.lower()
 
-        if img_type in ['png', 'jpg', 'jpeg', 'gif']:
+        new_file = "{}_{}".format(uuid.uuid4().hex, file_obj.name)
+        file_strem = file_obj.read()
 
-            new_file = "{}_{}".format(uuid.uuid4().hex, file_obj.name)
-            file_strem = file_obj.read()
+        url = CosBase().set(file_strem, new_file)
 
-            url = CosBase().set(file_strem,new_file)
-
-            return {"data":{
-                "path":url,
-                "name":new_file
-            }}
-        else:
-            raise PubErrorCustom("文件类型有误!")
+        return {"data": {
+            "path": url,
+            "name": new_file
+        }}
 
 
     @list_route(methods=['POST','OPTIONS'])

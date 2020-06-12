@@ -3,6 +3,7 @@ import json
 from   django_redis  import   get_redis_connection
 from lib.utils.exceptions import PubErrorCustom
 from lib.utils.mytime import UtilTime
+from lib.utils.log import logger
 
 class RedisHandler(object):
     def __init__(self,**kwargs):
@@ -179,3 +180,35 @@ class RedisVercodeHandler(RedisHandler):
         self.key = "vercode_{}".format(mobile)
         res = self.redis_client.get(self.key)
         return res.decode('utf-8') if res else ""
+
+
+class RedisAppHandler(RedisHandler):
+    """
+    app升级
+        data:{
+            "version":"100",
+            "url":"",
+            "note":"修改bug"
+        }
+    """
+    def __init__(self,**kwargs):
+        kwargs.setdefault('db', 'token')
+        super().__init__(**kwargs)
+        self.key = "sys_update_{}".format('android')
+
+    def set(self,data=None):
+        self.redis_client.set(self.key, json.dumps(data))
+
+    def get(self):
+        res = self.redis_client.get(self.key)
+        return json.loads(res.decode('utf-8')) if res else res
+
+    def isUpdate(self,version):
+
+        res = self.get()
+        print("上传版本号{},系统版本{}".format(version,res))
+        logger.info("上传版本号{},系统版本{}".format(version,res))
+        if res and version and int(res['version']) <= int(version):
+            return res
+        else:
+            return None
