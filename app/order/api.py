@@ -200,15 +200,18 @@ class OrderAPIView(viewsets.ViewSet):
                                 logger.info("收货地址{},限购城市{}".format(itemCity,city))
                                 raise PubErrorCustom("{},库存不够!".format(goodsObj.gdname))
 
-                    if goodsObj.limit_unit == 'M':
-                        start = ut.today.shift(months=goodsObj.limit_count*-1).timestamp
-                    elif goodsObj.limit_unit == 'W':
-                        start = ut.today.shift(weeks=goodsObj.limit_count*-1).timestamp
+                    if goodsObj.limit_unit == 'A':
+                        pass
+                    else:
+                        if goodsObj.limit_unit == 'M':
+                            start = ut.today.shift(months=goodsObj.limit_count*-1).timestamp
+                        elif goodsObj.limit_unit == 'W':
+                            start = ut.today.shift(weeks=goodsObj.limit_count*-1).timestamp
 
-                    okcount = queryBuyOkGoodsCount(order.userid,goodsObj.gdid,start,end)
-                    logger.info("目前购买->{},实际已购买->{},规则数量->{}".format(item.gdnum,okcount,goodsObj.limit_number))
-                    if item.gdnum+okcount > goodsObj.limit_number:
-                        raise PubErrorCustom("{},库存不够!".format(goodsObj.gdname))
+                        okcount = queryBuyOkGoodsCount(order.userid,goodsObj.gdid,start,end)
+                        logger.info("目前购买->{},实际已购买->{},规则数量->{}".format(item.gdnum,okcount,goodsObj.limit_number))
+                        if item.gdnum+okcount > goodsObj.limit_number:
+                            raise PubErrorCustom("{},库存不够!".format(goodsObj.gdname))
 
                 except Goods.DoesNotExist:
                     raise PubErrorCustom("商品{}已下架!".format(goodsObj.gdname))
