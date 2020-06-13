@@ -83,18 +83,18 @@ class FilterWebAPIView(viewsets.ViewSet):
         query_format = str()
 
         if request.query_params_format.get("status"):
-            query_format = query_format + " and t1.status={}".format(request.query_params_format.get("status"))
+            query_format = query_format + " and t1.status='{}'".format(request.query_params_format.get("status"))
         if request.query_params_format.get("before_status"):
-            query_format = query_format + " and t1.before_status={}".format(request.query_params_format.get("before_status"))
+            query_format = query_format + " and t1.before_status='{}'".format(request.query_params_format.get("before_status"))
         if request.query_params_format.get("orderid"):
-            query_format = query_format + " and t1.orderid={}".format(request.query_params_format.get("orderid"))
+            query_format = query_format + " and t1.orderid='{}'".format(request.query_params_format.get("orderid"))
         if request.query_params_format.get("startdate") and request.query_params_format.get("enddate"):
             query_format = query_format + " and t1.createtime>={} and t1.createtime<={}".format(
                 send_toTimestamp(request.query_params_format.get("startdate")),
                 send_toTimestamp(request.query_params_format.get("enddate"))
             )
         if request.query_params_format.get("mobile"):
-            query_format = query_format + " and t2.mobile={}".format(request.query_params_format.get("mobile"))
+            query_format = query_format + " and t2.mobile='{}'".format(request.query_params_format.get("mobile"))
 
         orders = Order.objects.raw("""
             SELECT t1.*,t2.mobile FROM `order` as t1

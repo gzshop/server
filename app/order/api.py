@@ -142,7 +142,7 @@ class OrderAPIView(viewsets.ViewSet):
                 glink = GoodsLinkSku.objects.get(id=item.get("linkid"))
                 if glink.stock < 1:
                     raise PubErrorCustom("商品({})库存不够!".format(goods.gdname))
-            except Goods.DoesNotExist:
+            except GoodsLinkSku.DoesNotExist:
                 raise PubErrorCustom("商品({})规格已下架!".format(goods.gdname))
 
             link = OrderGoodsLink.objects.create(**dict(
