@@ -10,6 +10,7 @@ from app.cache.utils import RedisCaCheHandler
 from lib.utils.db import RedisAppHandler
 
 from app.public.serialiers import SysparamsModelSerializer
+from app.order.utils import cityLimit
 
 class PublicAPIView(viewsets.ViewSet):
 
@@ -252,3 +253,10 @@ class PublicAPIView(viewsets.ViewSet):
     def appGet(self, request):
 
         return {"data":RedisAppHandler().get()}
+
+
+    @list_route(methods=['GET'])
+    @Core_connector(isPasswd=True)
+    def citysGet(self, request):
+
+        return {"data":cityLimit().get}

@@ -20,7 +20,7 @@ from app.order.models import Address
 from lib.utils.log import logger
 from app.goods.models import Card,Cardvirtual,DeliveryCode,Goods,GoodsLinkSku
 
-from app.order.utils import wechatPay,updBalList,AlipayBase,fastMail,calyf,queryBuyOkGoodsCount
+from app.order.utils import wechatPay,updBalList,AlipayBase,fastMail,calyf,queryBuyOkGoodsCount,cityLimit
 from lib.utils.db import RedisTokenHandler
 from lib.utils.mytime import UtilTime
 
@@ -179,14 +179,27 @@ class OrderAPIView(viewsets.ViewSet):
 
         ut = UtilTime()
         end = ut.timestamp
+        cityHandler = cityLimit()
         try:
             order = Order.objects.select_for_update().get(orderid=orderid)
+            try:
+                city = json.loads(order.address).get("label","").split('-')[0]
+            except Exception as e:
+                logger.info(str(e))
+                city = None
             if order.status=='1':
                 raise PubErrorCustom("此订单已付款!")
 
             for item in OrderGoodsLink.objects.filter(linkid__in=json.loads(order.linkid)['linkids']):
                 try:
                     goodsObj = Goods.objects.get(gdid=item.gdid)
+
+                    if city:
+                        for itemCity in json.loads(goodsObj.limit_citys):
+                            if cityHandler.isExists(itemCity,city):
+                                logger.info("收货地址{},限购城市{}".format(itemCity,city))
+                                raise PubErrorCustom("{},库存不够!".format(goodsObj.gdname))
+
                     if goodsObj.limit_unit == 'M':
                         start = ut.today.shift(months=goodsObj.limit_count*-1).timestamp
                     elif goodsObj.limit_unit == 'W':

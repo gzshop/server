@@ -96,6 +96,9 @@ class Goods(models.Model):
     limit_count = models.IntegerField(verbose_name="限购周期值",default=0)
     limit_number = models.IntegerField(verbose_name="限购数量",default=0)
 
+    limit_citys = models.CharField(max_length=255,verbose_name="限购地区",default="[]", null=True,blank=True)
+    limit_citys_number = models.IntegerField(verbose_name="地区限购数量",default=0,null=True,blank=True)
+
     def save(self, *args, **kwargs):
 
         if not self.gdid:

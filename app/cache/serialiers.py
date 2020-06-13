@@ -120,6 +120,8 @@ class GoodsModelSerializerToRedis(serializers.ModelSerializer):
 
     gdsku = serializers.SerializerMethodField()
 
+    limit_citys = serializers.SerializerMethodField()
+
     # gdcgname = serializers.SerializerMethodField()
     #
     # def get_gdcgname(self,obj):
@@ -127,6 +129,10 @@ class GoodsModelSerializerToRedis(serializers.ModelSerializer):
     #         return GoodsCateGory.objects.get(gdcgid=obj.gdcgid).name
     #     except GoodsCateGory.DoesNotExist:
     #         return ""
+
+
+    def get_limit_citys(self,obj):
+        return json.loads(obj.limit_citys)
 
     def get_gdsku(self,obj):
         d=json.loads(obj.gdsku)

@@ -105,7 +105,8 @@ class GoodsAPIView(viewsets.ViewSet):
         obj = serializer.save()
         obj.userid = request.user.get('userid')
 
-        obj.gdimg = json.dumps(request.data_format.get("gdimg1"))
+        obj.gdimg = json.dumps(request.data_format.get("gdimg1",[]))
+        obj.limit_citys = json.dumps(request.data_format.get("limit_citys1",[]))
 
         obj.gdsku = json.dumps(request.data_format.get("skuShow"))
 
@@ -166,7 +167,7 @@ class GoodsAPIView(viewsets.ViewSet):
             table="goods",
             filter_value=request.query_params_format
         ).run()
-
+        print(obj)
         if obj:
             RClass = RedisCaCheHandlerBase(key="goodscategory")
             for item in obj:
