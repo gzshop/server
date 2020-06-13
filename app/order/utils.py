@@ -286,11 +286,16 @@ class AlipayBase(object):
 
         try:
             orderObj = Order.objects.select_for_update().get(orderid=iData.get("out_trade_no",""))
+            if orderObj.status == '1':
+                logger.info("订单{}已处理".format(orderObj.orderid))
+                raise PubErrorCustom("订单{}已处理".format(orderObj.orderid))
         except Order.DoesNotExist:
             raise PubErrorCustom("订单不存在!")
 
         orderObj.status = '1'
         orderObj.save()
+
+        logger.info("支付宝回调订单处理成功!=>{}".format(iData))
 
         try:
             for item in OrderGoodsLink.objects.filter(linkid__in=json.loads(orderObj.linkid)['linkids']):
