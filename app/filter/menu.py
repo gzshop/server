@@ -26,8 +26,7 @@ first = [
                 "path": 'user',
                 "component": 'views/userinfo/user',
                 "meta": {
-                    "i18n": 'user',
-                    "keepAlive": True
+                    "i18n": 'user'
                 },
                 "icon": 'el-icon-user-solid',
                 "children": []
@@ -58,8 +57,7 @@ first = [
                 "path": '/bannerHandler',
                 "component": 'views/shopinfo/bannerHandler',
                 "meta": {
-                    "i18n": 'bannerHandler',
-                    "keepAlive": False
+                    "i18n": 'bannerHandler'
                 },
                 "icon": 'el-icon-picture-outline-round',
                 "children": []
@@ -79,8 +77,7 @@ first = [
                 "path": '/goods',
                 "component": 'views/goodsinfo/goods',
                 "meta": {
-                    "i18n": 'goods',
-                    "keepAlive": True
+                    "i18n": 'goods'
                 },
                 "icon": 'el-icon-s-goods',
                 "children": []
@@ -90,8 +87,7 @@ first = [
                 "path": '/category',
                 "component": 'views/goodsinfo/category',
                 "meta": {
-                    "i18n": 'category',
-                    "keepAlive": True
+                    "i18n": 'category'
                 },
                 "icon": 'el-icon-menu',
                 "children": []
