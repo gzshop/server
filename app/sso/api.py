@@ -184,8 +184,8 @@ class SsoAPIView(viewsets.ViewSet):
                 "appid": ""
             })
 
-        # if request.data_format.get('vercode',"1") != RedisVercodeHandler().get(user.uuid):
-        #     raise PubErrorCustom("验证码错误!")
+        if request.data_format.get('vercode',"1") != RedisVercodeHandler().get(user.uuid):
+            raise PubErrorCustom("验证码错误!")
 
         token = get_token()
         res = UserModelSerializerToRedis(user, many=False).data
