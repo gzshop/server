@@ -8,13 +8,14 @@ from decimal import *
 from lib.utils.log import logger
 
 from project.config_include.params import WECHAT_PAY_KEY,WECHAT_APPID,CALLBACKURL,WECHAT_PAY_MCHID,WECHAT_PAY_RETURN_KEY,\
-    AliPay_Appid,AliPay_app_private_key,AliPay_alipay_public_key,AliPay_way,Alipay_callbackUrl,FASTMAIL_Key
+    AliPay_Appid,AliPay_app_private_key,AliPay_alipay_public_key,AliPay_way,Alipay_callbackUrl,FASTMAIL_Key,Alipay_callbackUrlForVip
 from lib.utils.exceptions import PubErrorCustom
-from app.order.models import Order,OrderGoodsLink
-from app.goods.models import GoodsLinkSku
+from app.order.models import Order,OrderGoodsLink,OrderVip,viphandler
+from app.goods.models import GoodsLinkSku,Goods
 from app.user.models import Users
 from app.user.models import BalList
 from alipay import AliPay
+from lib.utils.mytime import UtilTime
 from django.conf import settings
 from lib.utils.string_extension import md5pass
 import base64
@@ -213,7 +214,6 @@ def updBalList(user,order,amount,bal,confirm_bal,memo,cardno=None):
         "orderid":order.orderid if order else cardno
     })
 
-
 class AlipayBase(object):
 
     def __init__(self):
@@ -234,12 +234,12 @@ class AlipayBase(object):
             debug=False,  # 上线则改为False , 沙箱True
         )
 
-    def create(self,order_id,amount):
-        print(order_id,amount)
+    def create(self,order_id,amount,subject=None):
+
         order_string = self.alipay.api_alipay_trade_app_pay(
             out_trade_no=order_id,
             total_amount=str(amount.quantize(Decimal('0.00'))),
-            subject='支付订单:%s' % order_id,
+            subject='支付订单:%s' % order_id if not subject else subject,
             return_url=None,
             notify_url=None,
         )
@@ -260,14 +260,50 @@ class AlipayBase(object):
             for item in OrderGoodsLink.objects.filter(linkid__in=json.loads(order.linkid)['linkids']):
                 try:
                     glObj = GoodsLinkSku.objects.select_for_update().get(id=item.skugoodslinkid)
-                    glObj.stock += 1
-                    glObj.number -=1
+                    glObj.stock += item.gdnum
+                    glObj.number -=item.gdnum
                     glObj.save()
                 except GoodsLinkSku.DoesNotExist:
                     pass
         except Exception as e:
             print(str(e))
 
+    def callback_vip(self,data):
+        iData = dict()
+        for item in data:
+            iData[item] = data[item]
+
+        sign = iData.pop("sign", None)
+        if not self.alipay.verify(iData, sign):
+            print(iData)
+            raise PubErrorCustom("验签失败!")
+
+        if iData.get("trade_status", None) != 'TRADE_SUCCESS':
+            print(iData)
+            raise PubErrorCustom("交易状态异常!")
+
+        try:
+            orderObj = OrderVip.objects.select_for_update().get(orderid=iData.get("out_trade_no", ""))
+            if orderObj.status == '1':
+                logger.info("订单{}已处理".format(orderObj.orderid))
+                raise PubErrorCustom("订单{}已处理".format(orderObj.orderid))
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单不存在!")
+
+        orderObj.status = '1'
+
+        user = Users.objects.select_for_update().get(userid=orderObj.userid)
+        if user.isvip == '1':
+            user.exprise = viphandler(user.exprise,orderObj.unit,orderObj.term)
+            orderObj.exprise =  user.exprise
+        else:
+            user.isvip = '1'
+            user.term = orderObj.term
+            user.unit = orderObj.unit
+            user.exprise = orderObj.exprise
+
+        orderObj.save()
+        user.save()
 
     def callback(self,data):
 
@@ -295,19 +331,119 @@ class AlipayBase(object):
         orderObj.status = '1'
         orderObj.save()
 
+        user = Users.objects.select_for_update().get(userid=orderObj.userid)
+
+        logger.info("用户{}积分余额{}使用积分{}获得积分{}".format(user.mobile,user.jf,orderObj.use_jf,orderObj.get_jf))
+        user.jf -= orderObj.use_jf
+        user.jf += orderObj.get_jf
+        user.save()
+
         logger.info("支付宝回调订单处理成功!=>{}".format(iData))
 
+        # try:
+        #     for item in OrderGoodsLink.objects.filter(linkid__in=json.loads(orderObj.linkid)['linkids']):
+        #         try:
+        #             glObj = GoodsLinkSku.objects.select_for_update().get(id=item.skugoodslinkid)
+        #             glObj.stock -= 1
+        #             glObj.number +=1
+        #             glObj.save()
+        #         except GoodsLinkSku.DoesNotExist:
+        #             pass
+        # except Exception as e:
+        #     print(str(e))
+
+class OrderBase(object):
+
+    def __init__(self,**kwargs):
+
+        self.order = kwargs.get("order")
+        self.cityHandler = cityLimit()
+        self.ut = UtilTime()
+
+    def checkvoidForcreateOrder(self,**kwargs):
+
+        """
+        按区域限购
+        按周期时间限购
+        :param kwargs:
+        :return:
+        """
+        ut = self.ut
+        end = ut.timestamp
+        cityHandler = self.cityHandler
+        order = self.order
+
+        goodsObj = kwargs.get("goodsObj")
+        gdnum = kwargs.get("gdnum")
+
+        flag = kwargs.get("flag",None)
+
+        if flag == 'city':
+
+            for item in OrderGoodsLink.objects.filter(linkid__in=json.loads(order.linkid)['linkids']):
+
+                try:
+                    goodsObj = Goods.objects.get(gdid=item.gdid)
+                    if goodsObj.gdstatus != '0':
+                        raise PubErrorCustom("商品{}已下架".format(goodsObj.gdname))
+                except Goods.DoesNotExist :
+                    raise PubErrorCustom("商品{}不存在".format(goodsObj.gdname))
+
+                try:
+                    city = json.loads(order.address).get("label", "").split('-')[0]
+                except Exception as e:
+                    logger.info(str(e))
+                    city = None
+
+                if city:
+                    for itemCity in json.loads(goodsObj.limit_citys):
+                        if cityHandler.isExists(itemCity, city):
+                            logger.info("收货地址{},限购城市{}".format(itemCity, city))
+                            raise PubErrorCustom("{},库存不够!".format(goodsObj.gdname))
+        else:
+
+            if goodsObj.limit_unit == 'A':
+                pass
+            else:
+                if goodsObj.limit_unit == 'M':
+                    start = ut.today.shift(months=goodsObj.limit_count * -1).timestamp
+                elif goodsObj.limit_unit == 'W':
+                    start = ut.today.shift(weeks=goodsObj.limit_count * -1).timestamp
+
+                okcount = queryBuyOkGoodsCount(order.userid, goodsObj.gdid, start, end)
+                logger.info("目前购买->{},实际已购买->{},规则数量->{}".format(gdnum, okcount, goodsObj.limit_number))
+                if gdnum + okcount > goodsObj.limit_number:
+                    raise PubErrorCustom("{},库存不够!".format(goodsObj.gdname))
+
+    def callbackStock(self):
+        order = self.order
         try:
-            for item in OrderGoodsLink.objects.filter(linkid__in=json.loads(orderObj.linkid)['linkids']):
+            for item in OrderGoodsLink.objects.filter(linkid__in=json.loads(order.linkid)['linkids']):
                 try:
                     glObj = GoodsLinkSku.objects.select_for_update().get(id=item.skugoodslinkid)
-                    glObj.stock -= 1
-                    glObj.number +=1
+                    glObj.stock += item.gdnum
+                    glObj.number -=item.gdnum
                     glObj.save()
                 except GoodsLinkSku.DoesNotExist:
                     pass
         except Exception as e:
             print(str(e))
+
+    def jfGet(self,**kwargs):
+        goodsObj = kwargs.get("goodsObj")
+        gdprice = kwargs.get("gdprice")
+        gdnum = kwargs.get("gdnum")
+
+        jf = Decimal("0.0")
+
+        if goodsObj.jf_type== '0':
+            return jf
+        if goodsObj.jf_type == '1':
+            return gdprice * goodsObj.jf_value * gdnum
+        elif goodsObj.jf_type == '2':
+            return goodsObj.jf_value * gdnum
+        else:
+            return jf
 
 
 class fastMail(object):
@@ -406,7 +542,7 @@ def queryBuyOkGoodsCount(userid,gdid,start,end):
     res =OrderGoodsLink.objects.raw("""
         SELECT sum(t1.gdnum) as linkid from `ordergoodslink` as t1
         INNER JOIN `order` as t2 ON t1.orderid = t2.orderid
-        WHERE t2.status in ('1','2','3') and t2.before_status!='2'  %s
+        WHERE t2.status in ('0','1','2','3') and t2.before_status!='2'  %s
     """%(query_format),[])
     logger.info(res)
     res = list(res)
@@ -423,3 +559,5 @@ class cityLimit(object):
     def isExists(self,city,city1):
 
         return city == city1
+
+

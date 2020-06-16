@@ -212,3 +212,24 @@ class RedisAppHandler(RedisHandler):
             return res
         else:
             return None
+
+class RedisUserVipHandler(RedisHandler):
+    """
+    会员付费方案
+        data:[
+            "term":"1",
+            "unit":"M",
+            "amount":"10.00"
+        ]
+    """
+    def __init__(self,**kwargs):
+        kwargs.setdefault('db', 'token')
+        super().__init__(**kwargs)
+        self.key = "userVipRule"
+
+    def set(self,data=None):
+        self.redis_client.set(self.key, json.dumps(data))
+
+    def get(self):
+        res = self.redis_client.get(self.key)
+        return json.loads(res.decode('utf-8')) if res else []

@@ -66,6 +66,7 @@ class Goods(models.Model):
     gdlabel = models.CharField(max_length=255, verbose_name="标签", default='', null=True,blank=True)
     gdimg = models.CharField(max_length=2048, verbose_name="封面图", default='[]', null=True,blank=True)
     gdsku = models.CharField(max_length=2048,verbose_name="sku显示",default='[]',null=True,blank=True)
+    gdskulist = models.CharField(max_length=2048,verbose_name="sku商品关联id",default='[]',null=True,blank=True)
 
     rolecode = models.CharField(max_length=4, default='', verbose_name="商品对应的用户类型")
 
@@ -98,6 +99,12 @@ class Goods(models.Model):
 
     limit_citys = models.CharField(max_length=255,verbose_name="限购地区",default="[]", null=True,blank=True)
     limit_citys_number = models.IntegerField(verbose_name="地区限购数量",default=0,null=True,blank=True)
+
+
+    isvip = models.CharField(max_length=1,verbose_name="是否仅会员可见,0-是,1-否",default='1')
+
+    jf_type = models.CharField(max_length=1,verbose_name="积分方式 0-未设置 1-按比例,2-按固定",default='0')
+    jf_value = models.DecimalField(max_digits=18,decimal_places=6,default=0.000,verbose_name="积分值")
 
     def save(self, *args, **kwargs):
 
@@ -286,6 +293,7 @@ class GoodsLinkSku(models.Model):
     cost_price = models.DecimalField(max_digits=18,decimal_places=6,default=0.000,verbose_name="成本价")
     number = models.IntegerField(verbose_name="销量",default=0)
     sort = models.IntegerField(verbose_name="排序",default=0)
+    jf = models.DecimalField(max_digits=18,decimal_places=6,default=0.000,verbose_name="积分")
 
     class Meta:
         db_table = 'goodslinksku'

@@ -9,7 +9,7 @@ from app.filter.menu import all_menu
 from app.cache.utils import RedisCaCheHandler
 
 from app.order.models import Order
-from app.order.serialiers import OrderModelSerializer
+from app.order.serialiers import OrderModelSerializer,OrderModelSerializer1
 
 from lib.utils.mytime import send_toTimestamp
 from app.user.models import Users
@@ -112,7 +112,7 @@ class FilterWebAPIView(viewsets.ViewSet):
         }
 
         return {
-            "data": OrderModelSerializer(orders[page_start:page_end], many=True).data,
+            "data": OrderModelSerializer1(orders[page_start:page_end], many=True).data,
             "header":headers
         }
 

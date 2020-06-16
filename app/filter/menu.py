@@ -42,6 +42,16 @@ first = [
                 "icon": 'el-icon-setting',
                 "children": []
             },
+            {
+                "label": "会员充值规则",
+                "path": 'vip',
+                "component": 'views/userinfo/vip',
+                "meta": {
+                    "i18n": 'vip'
+                },
+                "icon": 'el-icon-user-solid',
+                "children": []
+            },
         ]
     },
     {
@@ -93,7 +103,7 @@ first = [
                 "children": []
             },
             {
-                "label": "sku管理",
+                "label": "规格管理",
                 "path": '/sku',
                 "component": 'views/goodsinfo/sku/sku',
                 "meta": {

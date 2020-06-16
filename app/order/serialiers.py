@@ -102,7 +102,9 @@ class OrderModelSerializer(serializers.ModelSerializer):
                    filter(linkid__in=json.loads(obj.linkid)['linkids']).order_by("-updtime"), many=True).data
 
     def get_address(self,obj):
-        return json.loads(obj.address)
+        r=json.loads(obj.address)
+
+        return r if len(r) else False
 
     def get_status_format(self,obj):
         if obj.status=='0':
@@ -127,3 +129,74 @@ class OrderModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = '__all__'
+
+
+class OrderGoodsLinkModelSerializer1(serializers.Serializer):
+
+
+    gdtotprice = serializers.SerializerMethodField()
+    gdprice = serializers.DecimalField(max_digits=16,decimal_places=2)
+    gdname = serializers.CharField()
+    gdnum = serializers.IntegerField()
+    skugoodslabel = serializers.CharField()
+    gdimg = serializers.CharField()
+
+    def get_gdtotprice(self,obj):
+        return round(obj.gdprice * obj.gdnum,2)
+
+class OrderModelSerializer1(serializers.Serializer):
+
+    orderid = serializers.CharField()
+    create_format = serializers.SerializerMethodField()
+    mobile = serializers.CharField()
+    status = serializers.CharField()
+    before_status_format = serializers.SerializerMethodField()
+    status_format = serializers.SerializerMethodField()
+    goods = serializers.SerializerMethodField()
+    amount = serializers.DecimalField(max_digits=16,decimal_places=2)
+    yf = serializers.DecimalField(max_digits=16,decimal_places=2)
+    address = serializers.SerializerMethodField()
+    before_status = serializers.CharField()
+    kdno = serializers.CharField()
+    memo = serializers.CharField()
+
+    def get_address(self,obj):
+
+        address=json.loads(obj.address)
+
+        return {
+            "mobile":address.get("phone","未知"),
+            "name":address.get("name","未知"),
+            "address": address.get("label","").replace("-","") + address.get("detail",""),
+        } if len(address) else False
+
+    def get_before_status_format(self,obj):
+        if obj.before_status == '1':
+            return " 申请退款中"
+        elif obj.before_status == '3':
+            return " 申请退款被拒绝"
+        elif obj.before_status == '2':
+            return "申请退款通过"
+        return ""
+
+    def get_goods(self,obj):
+        return OrderGoodsLinkModelSerializer1(OrderGoodsLink.objects.filter(orderid=obj.orderid),many=True).data
+
+    def get_status_format(self,obj):
+        if obj.status=='0':
+            return "待付款"
+        elif obj.status=='1':
+            return "已付款(待发货)"
+        elif obj.status=='2':
+            return "已发货(待收货)"
+        elif obj.status=='3':
+            return "已收货"
+        elif obj.status=='4':
+            return "已退款"
+        elif obj.status=='9':
+            return "取消订单"
+        else:
+            return "未知"
+
+    def get_create_format(self,obj):
+        return UtilTime().timestamp_to_string(obj.createtime)

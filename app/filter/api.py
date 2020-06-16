@@ -8,7 +8,7 @@ from lib.core.decorator.response import Core_connector
 from lib.utils.db import RedisCaCheHandlerCitySheng,RedisCaCheHandlerCityShi,RedisCaCheHandlerCityXian
 
 from app.cache.utils import RedisCaCheHandler
-
+from app.user.models import Users
 from app.order.models import Address
 from app.goods.models import Goods,GoodsLinkSku
 from app.goods.serialiers import GoodsForSearchSerializer,GoodsLinkSkuSearchSerializer
@@ -26,6 +26,17 @@ class FilterAPIView(viewsets.ViewSet):
     @Core_connector(isPasswd=True)
     def getHomeData(self,request):
 
+        userid = None
+        user=None
+
+        ticket = request.META.get('HTTP_TICKET')
+        if ticket:
+            result = RedisTokenHandler(key=ticket).redis_dict_get()
+            if result:
+                userid = result.get("userid")
+
+        print("用户代码:{}".format(userid))
+
         rdata={
             "banners":[],
             "newgoods":[]
@@ -42,6 +53,8 @@ class FilterAPIView(viewsets.ViewSet):
             filter_value={}
         ).run() ]
 
+        if userid:
+            user = Users.objects.get(userid=userid)
         #新品数据
         for item in RedisCaCheHandler(
                 method="filter",
@@ -56,7 +69,17 @@ class FilterAPIView(viewsets.ViewSet):
                 must_key_value=item.get('gdcgid')
             ).run()
 
-            if obj['status']=='0' :
+            if userid and user.isvip=='1' and item['isvip'] =='0' and obj['status']=='0':
+                rdata['newgoods'].append(dict(
+                    gdid=item['gdid'],
+                    gdname=item['gdname'],
+                    gdimg=item['gdimg'],
+                    gdtext=item['gdtext'],
+                    gdprice=item['gdprice'],
+                    sort=item['sort']
+                ))
+
+            if obj['status']=='0' and item['isvip'] !='0':
                 rdata['newgoods'].append(dict(
                     gdid=item['gdid'],
                     gdname=item['gdname'],
@@ -93,7 +116,7 @@ class FilterAPIView(viewsets.ViewSet):
                     gdprice = res['gdprice'],
                     detail = res['detail'],
                     gdsku=res['gdsku'],
-                    goodslinksku=GoodsLinkSkuSearchSerializer(GoodsLinkSku.objects.filter(gdid=res['gdid']).order_by('sort'),many=True).data
+                    goodslinksku=GoodsLinkSkuSearchSerializer(GoodsLinkSku.objects.filter(id__in=res['gdskulist']).order_by('sort'),many=True).data
                 )
 
             data['yf'] = calyf(res['yf'])
@@ -168,6 +191,19 @@ class FilterAPIView(viewsets.ViewSet):
     @Core_connector(isPasswd=True)
     def getGoodsForCategory(self,request):
 
+        userid = None
+        user = None
+
+        ticket = request.META.get('HTTP_TICKET')
+        if ticket:
+            result = RedisTokenHandler(key=ticket).redis_dict_get()
+            if result:
+                userid = result.get("userid")
+
+        print("用户代码:{}".format(userid))
+
+        if userid:
+            user = Users.objects.get(userid=userid)
 
         obj = RedisCaCheHandler(
             method="get",
@@ -187,13 +223,25 @@ class FilterAPIView(viewsets.ViewSet):
             ).run()
 
             for item in res:
-                goods.append(dict(
-                    gdid=item['gdid'],
-                    gdimg=item['gdimg'],
-                    gdname=item['gdname'],
-                    sort=item['sort'],
-                    gdtext=item['gdtext'],
-                ))
+
+                if userid and user.isvip == '1' and item['isvip'] == '0':
+                    goods.append(dict(
+                        gdid=item['gdid'],
+                        gdimg=item['gdimg'],
+                        gdname=item['gdname'],
+                        sort=item['sort'],
+                        gdtext=item['gdtext'],
+                    ))
+
+                if item['isvip'] != '0':
+                    goods.append(dict(
+                        gdid=item['gdid'],
+                        gdimg=item['gdimg'],
+                        gdname=item['gdname'],
+                        sort=item['sort'],
+                        gdtext=item['gdtext'],
+                    ))
+
             goods.sort(key=lambda k: (k.get('sort', 0)), reverse=False)
             return {"data":goods}
         else:

@@ -101,10 +101,13 @@ class Order(models.Model):
     paymsg = models.TextField(default="")
     address = models.TextField(default="{}")
 
+    use_jf = models.DecimalField(verbose_name="交易使用积分",max_digits=18,decimal_places=6,default=0.0)
+    get_jf = models.DecimalField(verbose_name="获得积分",max_digits=18,decimal_places=6,default=0.0)
+
     isvirtual = models.CharField(max_length=1,verbose_name="是否都是虚拟商品 0-是,1-否",default="1")
     isthm = models.CharField(max_length=1,verbose_name="是否提货码兑换 0-是,1-否",default="1")
 
-    createtime = models.BigIntegerField(default=0)
+    createtime = models.BigIntegerField(default=0,verbose_name="订单创建时间")
     updtime = models.BigIntegerField(default=0)
 
     yf = models.DecimalField(verbose_name="运费",max_digits=18,decimal_places=6,default=0.0)
@@ -112,9 +115,7 @@ class Order(models.Model):
     kdno = models.CharField(max_length=60,verbose_name="快递单号",default="")
     kdname = models.CharField(max_length=60,verbose_name="快递公司简称",default="")
 
-
     paytype = models.CharField(max_length=1,verbose_name="支付方式 2-支付宝",default='2')
-
 
     mobile = None
 
@@ -134,6 +135,55 @@ class Order(models.Model):
         verbose_name_plural = verbose_name
         db_table = 'order'
 
+def viphandler(time,unit,term):
+    ut = UtilTime()
+    exprise= 0
+    paytime_arrow = ut.timestamp_to_arrow(time)
+    if unit == '0':
+        exprise = paytime_arrow.shift(weeks=term).timestamp
+    elif unit == '1':
+        exprise = paytime_arrow.shift(months=term).timestamp
+    elif unit == '2':
+        exprise = paytime_arrow.shift(years=term).timestamp
+
+    return exprise
+
+class OrderVip(models.Model):
+
+    """
+    会员订单充值表
+    """
+
+    id = models.BigAutoField(primary_key=True,verbose_name="ID")
+    orderid = models.CharField(max_length=19,verbose_name="订单ID",null=True)
+    userid = models.BigIntegerField(verbose_name="用户代码", null=True)
+    amount = models.DecimalField(verbose_name="交易金额",max_digits=18,decimal_places=6,default=0.0)
+    status = models.CharField(max_length=1,verbose_name="状态,0-待付款,1-已付款",default="0")
+    createtime = models.BigIntegerField(default=0,verbose_name="订单创建时间")
+    paytime = models.BigIntegerField(default=0, verbose_name="付款时间")
+    paytype = models.CharField(max_length=1, verbose_name="支付方式 2-支付宝", default='2')
+    exprise = models.BigIntegerField(default=0, verbose_name="到期时间")
+    term = models.IntegerField(default=0,verbose_name="期限")
+    unit = models.CharField(max_length=1,verbose_name="周期单位,0-周,1-月,Y-年",default='1')
+
+    def save(self, *args, **kwargs):
+
+        ut = UtilTime()
+
+        if not self.orderid:
+            self.orderid = idGenerator.ordercode()
+
+        if not self.exprise and self.paytime:
+            self.exprise = viphandler(self.paytime,self.unit,self.term)
+
+        if not self.createtime:
+            self.createtime = ut.timestamp
+        return super(OrderVip, self).save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = '会员充值订单表'
+        verbose_name_plural = verbose_name
+        db_table = 'ordervip'
 
 class Address(models.Model):
 

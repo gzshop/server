@@ -119,8 +119,11 @@ class GoodsModelSerializerToRedis(serializers.ModelSerializer):
     gdimg = serializers.SerializerMethodField()
 
     gdsku = serializers.SerializerMethodField()
+    gdskulist = serializers.SerializerMethodField()
 
     limit_citys = serializers.SerializerMethodField()
+
+    jf_value = serializers.DecimalField(max_digits=16,decimal_places=2)
 
     # gdcgname = serializers.SerializerMethodField()
     #
@@ -141,6 +144,9 @@ class GoodsModelSerializerToRedis(serializers.ModelSerializer):
                 item1['pid'] = item['group_id']
 
         return d
+
+    def get_gdskulist(self,obj):
+        return json.loads(obj.gdskulist)
 
     def get_gdimg(self,obj):
 

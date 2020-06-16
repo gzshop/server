@@ -109,24 +109,48 @@ class GoodsAPIView(viewsets.ViewSet):
         obj.limit_citys = json.dumps(request.data_format.get("limit_citys1",[]))
 
         obj.gdsku = json.dumps(request.data_format.get("skuShow"))
+        obj.gdskulist = []
 
-        obj.save()
-
-        GoodsLinkSku.objects.filter(gdid=obj.gdid).delete()
+        # GoodsLinkSku.objects.filter(gdid=obj.gdid).delete()
         for item in request.data_format.get("skuList",[]):
-            GoodsLinkSku.objects.create(**dict(
-                gdid=obj.gdid,
-                price = item['price'],
-                valueid1=item.get("specValueId1",0) if 'id1' not in item else item['id1'],
-                valueid2=item.get("specValueId2",0),
-                valueid3=item.get("specValueId3",0),
-                stock = item['active_num'],
-                code = item.get("sku_code",""),
-                cost_price = item.get("origin_price",0.0),
-                number = item.get('sale_num',0),
-                sort = item['sortNum']
-            ))
 
+            if item.get("id"):
+                try:
+                    glsObj = GoodsLinkSku.objects.get(id=item.get("id"))
+                except GoodsLinkSku.DoesNotExist:
+                    raise PubErrorCustom("规格明细不存在!")
+
+                glsObj.gdid = obj.gdid
+                glsObj.price = item['price']
+                glsObj.valueid1 = item.get("specValueId1", 0) if 'id1' not in item else item['id1']
+                glsObj.valueid2 = item.get("specValueId2", 0)
+                glsObj.valueid3 = item.get("specValueId3", 0)
+                glsObj.stock = item['active_num']
+                glsObj.code = item.get("sku_code", "")
+                glsObj.cost_price = item.get("origin_price", 0.0)
+                glsObj.number = item.get('sale_num', 0)
+                glsObj.sort = item['sortNum']
+                glsObj.jf = item.get("jf",0.0)
+                glsObj.save()
+                obj.gdskulist.append(glsObj.id)
+            else:
+                glsObj = GoodsLinkSku.objects.create(**dict(
+                    gdid=obj.gdid,
+                    price = item['price'],
+                    valueid1=item.get("specValueId1",0) if 'id1' not in item else item['id1'],
+                    valueid2=item.get("specValueId2",0),
+                    valueid3=item.get("specValueId3",0),
+                    stock = item['active_num'],
+                    code = item.get("sku_code",""),
+                    jf = item.get("jf",0.0),
+                    cost_price = item.get("origin_price",0.0),
+                    number = item.get('sale_num',0),
+                    sort = item['sortNum']
+                ))
+                obj.gdskulist.append(glsObj.id)
+
+        obj.gdskulist = json.dumps(obj.gdskulist)
+        obj.save()
         RedisCaCheHandler(
             method="save",
             serialiers="GoodsModelSerializerToRedis",
@@ -179,7 +203,7 @@ class GoodsAPIView(viewsets.ViewSet):
             for item in obj:
                 item['attribute'] = item['gdsku']
             for item in obj:
-                item['skuList'] =  GoodsLinkSkuSearchSerializer(GoodsLinkSku.objects.filter(gdid=item['gdid']),many=True).data
+                item['skuList'] =  GoodsLinkSkuSearchSerializer(GoodsLinkSku.objects.filter(id__in=item['gdskulist']),many=True).data
 
         return {"data":obj}
 

@@ -21,6 +21,18 @@ class Login(models.Model):
         verbose_name_plural = verbose_name
         db_table = 'login'
 
+class VipRule(models.Model):
+
+    id = models.BigAutoField(primary_key=True)
+    term = models.IntegerField(default=0,verbose_name="期限")
+    unit = models.CharField(max_length=1,verbose_name="周期单位,0-周,1-月,Y-年",default='1')
+    amount = models.DecimalField(max_digits=18,decimal_places=6,default=0.000,verbose_name="价格")
+
+    class Meta:
+        verbose_name = 'vip规则表'
+        verbose_name_plural = verbose_name
+        db_table = 'viprule'
+
 class Users(models.Model):
 
     userid = models.BigAutoField(verbose_name="用户ID",primary_key=True)
@@ -42,7 +54,12 @@ class Users(models.Model):
 
     isvip = models.CharField(max_length=1,default='0',verbose_name="是否会员:0-否，1-是")
 
+    exprise = models.BigIntegerField(default=0, verbose_name="到期时间")
+    term = models.IntegerField(default=0,verbose_name="期限")
+    unit = models.CharField(max_length=1,verbose_name="周期单位,0-周,1-月,Y-年",default='1')
+
     bal = models.DecimalField(max_digits=18,decimal_places=6,default=0.000,verbose_name="余额")
+    jf = models.DecimalField(max_digits=18,decimal_places=6,default=0.000,verbose_name="积分")
     createtime=models.BigIntegerField(default=0)
     updtime = models.BigIntegerField(default=0)
 

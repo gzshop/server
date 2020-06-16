@@ -5,10 +5,12 @@ from rest_framework.decorators import list_route
 from lib.utils.mytime import send_toTimestamp
 from lib.core.decorator.response import Core_connector
 from lib.utils.exceptions import PubErrorCustom
+from app.user.serialiers import UsersSerializers
 
 from app.cache.utils import RedisCaCheHandler
-from app.user.serialiers import UsersModelSerializer,RoleModelSerializer
-from app.user.models import Users,Role
+from app.user.serialiers import UsersModelSerializer,RoleModelSerializer,VipRuleModelSerializer,VipRuleModelSerializer1
+from app.user.models import Users,Role,VipRule
+from lib.utils.db import RedisUserVipHandler
 
 class UserAPIView(viewsets.ViewSet):
 
@@ -80,6 +82,16 @@ class UserAPIView(viewsets.ViewSet):
         return None
 
     @list_route(methods=['GET'])
+    @Core_connector(isTicket=True,isPasswd=True)
+    def GetBal(self, request):
+        try:
+            user = Users.objects.get(userid=request.user['userid'])
+        except Users.DoesNotExist:
+            raise PubErrorCustom("用户不存在!")
+
+        return {"data": UsersSerializers(user, many=False).data}
+
+    @list_route(methods=['GET'])
     @Core_connector(isTicket=True,isPasswd=True,isPagination=True)
     def GetRole(self, request):
         query = Role.objects.filter(rolecode__startswith='4')
@@ -103,5 +115,37 @@ class UserAPIView(viewsets.ViewSet):
             })
         else:
             Role.objects.filter(rolecode=request.data_format.get("rolecode")).update(name=request.data_format.get("name"))
+
+        return None
+
+    @list_route(methods=['GET'])
+    @Core_connector(isTicket=True, isPasswd=True,isPagination=True)
+    def get_vip_rule(self, request):
+
+        query = VipRule.objects.filter()
+
+        if request.query_params_format.get("id",None):
+            query = query.filter(id=request.query_params_format.get("id",None))
+
+        return {"data":VipRuleModelSerializer1(query.order_by('unit','term'),many=True).data}
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,
+                    isPasswd=True,
+                    isTicket=True,
+                    serializer_class=VipRuleModelSerializer,
+                    model_class=VipRule)
+    def save_vip_rule(self, request, *args, **kwargs):
+
+        serializer = kwargs.pop("serializer")
+        serializer.save()
+
+        return None
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,isTicket=True,isPasswd=True)
+    def del_vip_rule(self,request,*args, **kwargs):
+
+        VipRule.objects.filter(id=request.data_format.get("id")).delete()
 
         return None

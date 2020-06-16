@@ -22,6 +22,7 @@ class GoodsLinkSkuSearchSerializer(serializers.Serializer):
     specValueId1  = serializers.SerializerMethodField()
     specValueId2 = serializers.SerializerMethodField()
     specValueId3 = serializers.SerializerMethodField()
+    jf = serializers.DecimalField(max_digits=18,decimal_places=2)
 
     def get_specValueId1(self, obj):
         return obj.valueid1
