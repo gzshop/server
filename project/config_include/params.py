@@ -22,6 +22,8 @@ COS_secret_key = os.getenv("COS_secret_key","")
 Tx_Sms_secretId = os.getenv("Tx_Sms_secretId","")
 Tx_Sms_secretKey = os.getenv("Tx_Sms_secretKey","")
 
+#taskserver
+TASKSERVERURL = "{}/v1/taskapi/order".format(BASEURL)
 
 #物流
 FASTMAIL_Key = os.getenv("FASTMAIL_Key","ba89e3a3-54d2-413b-98f1-13402e3a9f78")

@@ -20,7 +20,7 @@ from app.order.models import Address
 from lib.utils.log import logger
 from app.goods.models import Card,Cardvirtual,DeliveryCode,Goods,GoodsLinkSku
 
-from app.order.utils import wechatPay,updBalList,AlipayBase,fastMail,calyf,queryBuyOkGoodsCount,cityLimit,OrderBase
+from app.order.utils import wechatPay,updBalList,AlipayBase,fastMail,calyf,queryBuyOkGoodsCount,cityLimit,OrderBase,request_task_order
 from lib.utils.db import RedisTokenHandler
 from lib.utils.mytime import UtilTime
 
@@ -179,6 +179,8 @@ class OrderAPIView(viewsets.ViewSet):
         orderObj.linkid=json.dumps(orderObj.linkid)
         orderObj.save()
 
+        request_task_order(orderObj.orderid)
+
         return {"data":orderObj.orderid}
 
     @list_route(methods=['POST'])
@@ -270,7 +272,7 @@ class OrderAPIView(viewsets.ViewSet):
             subject = "会员充值"
 
         if payType == 2:
-            return {"data": AlipayBase().create(order.orderid, order.amount,subject=subject)}
+            return {"data": AlipayBase(isVip=True).create(order.orderid, order.amount,subject=subject)}
         else:
             raise PubErrorCustom("支付方式有误!")
 

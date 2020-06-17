@@ -8,7 +8,7 @@ from decimal import *
 from lib.utils.log import logger
 
 from project.config_include.params import WECHAT_PAY_KEY,WECHAT_APPID,CALLBACKURL,WECHAT_PAY_MCHID,WECHAT_PAY_RETURN_KEY,\
-    AliPay_Appid,AliPay_app_private_key,AliPay_alipay_public_key,AliPay_way,Alipay_callbackUrl,FASTMAIL_Key,Alipay_callbackUrlForVip
+    AliPay_Appid,AliPay_app_private_key,AliPay_alipay_public_key,AliPay_way,Alipay_callbackUrl,FASTMAIL_Key,Alipay_callbackUrlForVip,TASKSERVERURL
 from lib.utils.exceptions import PubErrorCustom
 from app.order.models import Order,OrderGoodsLink,OrderVip,viphandler
 from app.goods.models import GoodsLinkSku,Goods
@@ -216,7 +216,7 @@ def updBalList(user,order,amount,bal,confirm_bal,memo,cardno=None):
 
 class AlipayBase(object):
 
-    def __init__(self):
+    def __init__(self,isVip=None):
 
         # print(AliPay_alipay_private_key)
         #
@@ -227,7 +227,7 @@ class AlipayBase(object):
 
         self.alipay = AliPay(
             appid=AliPay_Appid,
-            app_notify_url=Alipay_callbackUrl,
+            app_notify_url=Alipay_callbackUrl if not isVip else Alipay_callbackUrlForVip,
             app_private_key_string=AliPay_app_private_key,
             alipay_public_key_string=AliPay_alipay_public_key,
             sign_type="RSA2",
@@ -560,4 +560,14 @@ class cityLimit(object):
 
         return city == city1
 
+
+def request_task_order(orderid):
+
+    res = requests.request(url=TASKSERVERURL,method='POST',json={
+        "data":{
+            "orderid":orderid
+        }
+    })
+
+    logger.info("处理订单未付款到期状态{};{}".format(orderid,res.text))
 
