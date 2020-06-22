@@ -204,7 +204,7 @@ class GoodsAPIView(viewsets.ViewSet):
                 item['attribute'] = item['gdsku']
             for item in obj:
                 item['skuList'] =  GoodsLinkSkuSearchSerializer(GoodsLinkSku.objects.filter(id__in=item['gdskulist']),many=True).data
-
+        obj.sort(key=lambda k: (k.get('sort', 0)), reverse=False)
         return {"data":obj}
 
     @list_route(methods=['POST'])

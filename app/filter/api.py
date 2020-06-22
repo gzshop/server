@@ -89,8 +89,8 @@ class FilterAPIView(viewsets.ViewSet):
                     sort=item['sort']
                 ))
 
-        if len(rdata['newgoods']) >=6 :
-            rdata['newgoods'] = rdata['newgoods'][:6]
+        if len(rdata['newgoods']) >=20 :
+            rdata['newgoods'] = rdata['newgoods'][:20]
         else:
             rdata['newgoods'] = rdata['newgoods'][:len(rdata['newgoods'])]
         rdata['newgoods'].sort(key=lambda k: (k.get('sort', 0)), reverse=False)
