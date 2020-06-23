@@ -336,6 +336,7 @@ class OrderAPIView(viewsets.ViewSet):
 
             order.before_status = '1'
             order.refundmsg = refundmsg
+            order.apply_refund_time = UtilTime().timestamp
             order.save()
         except Order.DoesNotExist:
             raise PubErrorCustom("订单异常!")
@@ -368,6 +369,40 @@ class OrderAPIView(viewsets.ViewSet):
             user.save()
 
             AlipayBase().refund(order=order,orderid=order.orderid, refund_amount=order.amount)
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单异常!")
+
+        return None
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True, isPasswd=True, isTicket=True)
+    def QzCanlceHandler(self, request):
+        """
+        系统强制退款
+        :param request:
+        :return:
+        """
+        orderid = request.data_format.get("orderid", None)
+
+        try:
+            order = Order.objects.select_for_update().get(orderid=orderid)
+            if order.status != '1':
+                raise PubErrorCustom("只允许强制取消已付款待发货状态的订单!")
+            order.before_status = '2'
+            order.refundmsg = "因为系统原因，订单提交失败，钱款将原路退回支付账户，请注意查收！"
+            order.status = '4'
+            order.save()
+
+            try:
+                user = Users.objects.select_for_update().get(userid=order.userid)
+            except Users.DoesNotExist:
+                raise PubErrorCustom("用户{}有误!".format(user.mobile))
+
+            user.jf += order.use_jf
+            user.jf -= order.get_jf
+            user.save()
+
+            AlipayBase().refund(order=order, orderid=order.orderid, refund_amount=order.amount)
         except Order.DoesNotExist:
             raise PubErrorCustom("订单异常!")
 

@@ -151,6 +151,7 @@ class OrderModelSerializer1(serializers.Serializer):
     mobile = serializers.CharField()
     status = serializers.CharField()
     before_status_format = serializers.SerializerMethodField()
+    apply_refund_time_format = serializers.SerializerMethodField()
     status_format = serializers.SerializerMethodField()
     goods = serializers.SerializerMethodField()
     amount = serializers.DecimalField(max_digits=16,decimal_places=2)
@@ -159,6 +160,10 @@ class OrderModelSerializer1(serializers.Serializer):
     before_status = serializers.CharField()
     kdno = serializers.CharField()
     memo = serializers.CharField()
+
+    def get_apply_refund_time_format(self,obj):
+
+        return UtilTime().timestamp_to_string(obj.apply_refund_time)
 
     def get_address(self,obj):
 
