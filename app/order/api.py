@@ -152,6 +152,9 @@ class OrderAPIView(viewsets.ViewSet):
             except GoodsLinkSku.DoesNotExist:
                 raise PubErrorCustom("商品({})规格已下架!".format(goods.gdname))
 
+            if glink.id not in json.loads(goods.gdskulist):
+                raise PubErrorCustom("此规格已经更改,请重新购买!")
+
             orderHandler.checkvoidForcreateOrder(goodsObj=goods,gdnum=item.get("number"))
 
             link = OrderGoodsLink.objects.create(**dict(
