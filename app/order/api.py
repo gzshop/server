@@ -144,7 +144,7 @@ class OrderAPIView(viewsets.ViewSet):
 
             try:
                 glink = GoodsLinkSku.objects.select_for_update().get(id=item.get("linkid"))
-                if glink.stock < 1:
+                if glink.stock - int(item.get("number")) < 1:
                     raise PubErrorCustom("商品({})库存不够!".format(goods.gdname))
                 glink.stock -= int(item.get("number"))
                 glink.number += int(item.get("number"))
@@ -409,6 +409,50 @@ class OrderAPIView(viewsets.ViewSet):
         return None
 
     @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True, isPasswd=False)
+    def OrderCanleSys(self, request):
+        print("30分钟取消订单[{}]".format(request.data_format.get("orderid")))
+        try:
+            order = Order.objects.select_for_update().get(orderid=request.data_format.get("orderid"))
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单号不存在!")
+        if order.status == '0':
+            OrderBase(order=order).callbackStock()
+        order.status = '9'
+        order.save()
+
+        return None
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True, isPasswd=True, isTicket=True)
+    def OrderCanle(self, request):
+
+        try:
+            order = Order.objects.select_for_update().get(orderid=request.data_format.get("orderid"))
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单号不存在!")
+        if order.status == '0':
+            OrderBase(order=order).callbackStock()
+        order.status = '9'
+        order.save()
+
+        return None
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True, isPasswd=True, isTicket=True)
+    def OrderDel(self, request):
+        try:
+            order = Order.objects.select_for_update().get(orderid=request.data_format.get("orderid"))
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单号不存在!")
+        if order.status == '0':
+            OrderBase(order=order).callbackStock()
+        order.status = '8'
+        order.save()
+
+        return None
+
+    @list_route(methods=['POST'])
     @Core_connector(isTransaction=True, isPasswd=True, isTicket=True)
     def RefundConfirmCanleHandler(self, request):
         """
@@ -540,32 +584,7 @@ class OrderAPIView(viewsets.ViewSet):
             raise PubErrorCustom("订单号不存在!")
         return None
 
-    @list_route(methods=['POST'])
-    @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
-    def OrderCanle(self, request):
 
-        try:
-            order = Order.objects.select_for_update().get(orderid=request.data_format.get("orderid"))
-        except Order.DoesNotExist:
-            raise PubErrorCustom("订单号不存在!")
-        if order.status == '0':
-            OrderBase(order=order).callbackStock()
-        order.status = '9'
-        order.save()
-        return None
-
-    @list_route(methods=['POST'])
-    @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
-    def OrderDel(self, request):
-        try:
-            order = Order.objects.select_for_update().get(orderid=request.data_format.get("orderid"))
-        except Order.DoesNotExist:
-            raise PubErrorCustom("订单号不存在!")
-        if order.status == '0':
-            OrderBase(order=order).callbackStock()
-        order.status = '8'
-        order.save()
-        return None
 
     @list_route(methods=['GET'])
     @Core_connector(isPasswd=True,isTicket=True)
