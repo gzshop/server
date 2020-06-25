@@ -418,8 +418,11 @@ class OrderAPIView(viewsets.ViewSet):
             raise PubErrorCustom("订单号不存在!")
         if order.status == '0':
             OrderBase(order=order).callbackStock()
-        order.status = '9'
-        order.save()
+            order.status = '9'
+            order.save()
+        else:
+            raise PubErrorCustom("只能未付款订单才能取消！")
+
 
         return None
 
@@ -433,8 +436,10 @@ class OrderAPIView(viewsets.ViewSet):
             raise PubErrorCustom("订单号不存在!")
         if order.status == '0':
             OrderBase(order=order).callbackStock()
-        order.status = '9'
-        order.save()
+            order.status = '9'
+            order.save()
+        else:
+            raise PubErrorCustom("只能未付款订单才能取消！")
 
         return None
 
@@ -447,8 +452,10 @@ class OrderAPIView(viewsets.ViewSet):
             raise PubErrorCustom("订单号不存在!")
         if order.status == '0':
             OrderBase(order=order).callbackStock()
-        order.status = '8'
-        order.save()
+            order.status = '8'
+            order.save()
+        else:
+            raise PubErrorCustom("错误!")
 
         return None
 
