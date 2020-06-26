@@ -22,3 +22,4 @@ tencentcloud-sdk-python
 qcloud-python-sts
 xmltodict
 python-alipay-sdk
+celery
