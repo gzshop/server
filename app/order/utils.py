@@ -238,7 +238,6 @@ class AlipayBase(object):
         response  = self.alipay.api_alipay_trade_query(
             out_trade_no=orderid
         )
-        print(response)
         return response
 
     def create(self,order_id,amount,subject=None):
