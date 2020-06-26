@@ -21,3 +21,5 @@ if __name__=='__main__':
 
     for item in Order.objects.filter(status='9'):
         response  = AlipayBase().query(orderid=item.orderid)
+        if response['code'] == '10000' and response['trade_status'] == 'TRADE_SUCCESS':
+            print(response)
