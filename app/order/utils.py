@@ -234,6 +234,13 @@ class AlipayBase(object):
             debug=False,  # 上线则改为False , 沙箱True
         )
 
+    def query(self,orderid):
+        response  = self.alipay.api_alipay_trade_query(
+            out_trade_no=orderid
+        )
+        print(response)
+        return response
+
     def create(self,order_id,amount,subject=None):
 
         order_string = self.alipay.api_alipay_trade_app_pay(
