@@ -25,6 +25,8 @@ Tx_Sms_secretKey = os.getenv("Tx_Sms_secretKey","")
 #taskserver
 TASKSERVERURL = "{}v1/taskapi/order".format(BASEURL)
 
+ORDERCANLETIME = int(os.environ.get('ORDERTIME', 30))
+
 #物流
 FASTMAIL_Key = os.getenv("FASTMAIL_Key","ba89e3a3-54d2-413b-98f1-13402e3a9f78")
 

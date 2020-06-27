@@ -23,6 +23,7 @@ from app.goods.models import Card,Cardvirtual,DeliveryCode,Goods,GoodsLinkSku
 from app.order.utils import wechatPay,updBalList,AlipayBase,fastMail,calyf,queryBuyOkGoodsCount,cityLimit,OrderBase,request_task_order
 from lib.utils.db import RedisTokenHandler
 from lib.utils.mytime import UtilTime
+from project.config_include.params import ORDERCANLETIME
 
 class OrderAPIView(viewsets.ViewSet):
 
@@ -407,6 +408,22 @@ class OrderAPIView(viewsets.ViewSet):
             raise PubErrorCustom("订单异常!")
 
         return None
+
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True, isPasswd=False)
+    def OrderCanleSysEx(self, request):
+        logger.info("晚上批量处理取消订单!")
+
+        today = UtilTime().today.shift(minutes=ORDERCANLETIME*-1)
+
+        for order in Order.objects.select_for_update().filter(createtime__lte=today.timestamp):
+            if order.status == '0':
+                OrderBase(order=order).callbackStock()
+                order.status = '9'
+                order.save()
+
+        logger.info("晚上批量处理取消订单成功!")
 
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True, isPasswd=False)
