@@ -417,11 +417,11 @@ class OrderAPIView(viewsets.ViewSet):
 
         today = UtilTime().today.shift(minutes=ORDERCANLETIME*-1)
 
-        for order in Order.objects.select_for_update().filter(createtime__lte=today.timestamp):
-            if order.status == '0':
-                OrderBase(order=order).callbackStock()
-                order.status = '9'
-                order.save()
+        for order in Order.objects.select_for_update().filter(createtime__lte=today.timestamp,status='0'):
+            # if order.status == '0':
+            OrderBase(order=order).callbackStock()
+            order.status = '9'
+            order.save()
 
         logger.info("晚上批量处理取消订单成功!")
 
