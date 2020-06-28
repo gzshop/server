@@ -1,8 +1,29 @@
 
 import json
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 from app.user.models import Users,Role,VipRule
 from lib.utils.mytime import UtilTime
+
+
+
+class ManageSerializer(serializers.Serializer):
+
+    userid = serializers.IntegerField()
+    name = serializers.CharField()
+    uuid = serializers.CharField()
+    passwd = serializers.CharField()
+    createtime_format = serializers.SerializerMethodField()
+    rolename = serializers.SerializerMethodField()
+
+    def get_rolename(self,obj):
+        try:
+            return Role.objects.get(rolecode=obj.rolecode).name
+        except Role.DoesNotExist:
+            return ""
+
+    def get_createtime_format(self,obj):
+        return UtilTime().timestamp_to_string(obj.createtime)
 
 class RoleModelSerializer(serializers.ModelSerializer):
 
@@ -17,6 +38,7 @@ class UsersSerializers(serializers.Serializer):
     name = serializers.CharField()
     bal = serializers.DecimalField(max_digits=16, decimal_places=2)
     jf = serializers.DecimalField(max_digits=16, decimal_places=2)
+    rolecode = serializers.IntegerField()
     isvip = serializers.CharField()
     unit_format = serializers.SerializerMethodField()
     exprise = serializers.SerializerMethodField()
@@ -44,6 +66,12 @@ class UsersModelSerializer(serializers.ModelSerializer):
 
     rolename = serializers.SerializerMethodField()
 
+    exprise_format = serializers.SerializerMethodField()
+
+
+    def get_exprise_format(self,obj):
+
+        return UtilTime().timestamp_to_string(obj.exprise)
 
     def get_rolename(self,obj):
         try:

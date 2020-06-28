@@ -110,7 +110,7 @@ class SsoAPIView(viewsets.ViewSet):
     def login(self, request):
 
         try:
-            user = Users.objects.get(uuid=request.data_format.get('username'),rolecode__in=['1000','1001'])
+            user = Users.objects.get(uuid=request.data_format.get('username'),rolecode__in=['1000','1100'])
         except Users.DoesNotExist:
             raise PubErrorCustom("登录账户错误！")
 
@@ -164,6 +164,31 @@ class SsoAPIView(viewsets.ViewSet):
         sendMsg(mobile,vercode)
         RedisVercodeHandler().set(mobile,vercode)
         return None
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True, isPasswd=True)
+    def login2(self, request):
+
+        try:
+            user = Users.objects.get(uuid=request.data_format.get('loginname'), rolecode__in=['1000', '1200'])
+        except Users.DoesNotExist:
+            raise PubErrorCustom("登录账户错误！")
+
+        if user.passwd != self.request.data_format.get('passwd'):
+            raise PubErrorCustom("密码错误！")
+
+        if user.status == 1:
+            raise PubErrorCustom("登陆账号已到期！")
+        elif user.status == 2:
+            raise PubErrorCustom("已冻结！")
+        token = get_token()
+        res = UserModelSerializerToRedis(user, many=False).data
+        RedisTokenHandler(key=token).redis_dict_set(res)
+
+        return {"data": {
+            "token": token,
+            "userinfo": UsersSerializers(user, many=False).data
+        }}
 
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True,isPasswd=True)

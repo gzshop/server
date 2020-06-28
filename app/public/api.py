@@ -7,7 +7,7 @@ from lib.utils.exceptions import PubErrorCustom
 
 from app.public.models import Banner,AttachMent,AttachMentGroup,OtherMemo,Sysparams
 from app.cache.utils import RedisCaCheHandler
-from lib.utils.db import RedisAppHandler
+from lib.utils.db import RedisAppHandler,RedisAppHandlerAdmin
 
 from app.public.serialiers import SysparamsModelSerializer
 from app.order.utils import cityLimit
@@ -253,6 +253,38 @@ class PublicAPIView(viewsets.ViewSet):
     def appGet(self, request):
 
         return {"data":RedisAppHandler().get()}
+
+
+    @list_route(methods=['POST'])
+    @Core_connector(isPasswd=True)
+    def appAdminUpdate(self, request):
+
+        version = request.data_format.get("version",None)
+        url =  request.data_format.get("url",None)
+        note = request.data_format.get("note", None)
+
+        if not version:
+            raise PubErrorCustom("版本号不能为空")
+
+        if not url:
+            raise PubErrorCustom("下载地址不能为空!")
+
+        if not note:
+            raise PubErrorCustom("更新内容不能为空!")
+
+        RedisAppHandlerAdmin().set(data={
+            "version":version,
+            "url":url,
+            "note":note
+        })
+
+        return None
+
+    @list_route(methods=['GET'])
+    @Core_connector(isPasswd=True)
+    def appAdminGet(self, request):
+
+        return {"data":RedisAppHandlerAdmin().get()}
 
 
     @list_route(methods=['GET'])

@@ -213,6 +213,37 @@ class RedisAppHandler(RedisHandler):
         else:
             return None
 
+class RedisAppHandlerAdmin(RedisHandler):
+    """
+    app升级
+        data:{
+            "version":"100",
+            "url":"",
+            "note":"修改bug"
+        }
+    """
+    def __init__(self,**kwargs):
+        kwargs.setdefault('db', 'token')
+        super().__init__(**kwargs)
+        self.key = "sys_admin_update_{}".format('android')
+
+    def set(self,data=None):
+        self.redis_client.set(self.key, json.dumps(data))
+
+    def get(self):
+        res = self.redis_client.get(self.key)
+        return json.loads(res.decode('utf-8')) if res else res
+
+    def isUpdate(self,version):
+
+        res = self.get()
+        print("上传版本号{},系统版本{}".format(version,res))
+        logger.info("上传版本号{},系统版本{}".format(version,res))
+        if res and version and int(res['version']) > int(version):
+            return res
+        else:
+            return None
+
 class RedisUserVipHandler(RedisHandler):
     """
     会员付费方案

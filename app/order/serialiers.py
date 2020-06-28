@@ -34,6 +34,14 @@ class OrderGoodsLinkModelSerializer(serializers.ModelSerializer):
 
     gdprice = serializers.DecimalField(max_digits=16,decimal_places=2)
     thms = serializers.SerializerMethodField()
+    goodsqrcode = serializers.SerializerMethodField()
+    qrcodes = serializers.SerializerMethodField()
+
+    def get_qrcodes(self,obj):
+        return json.loads(obj.goodsqrcode)
+
+    def get_goodsqrcode(self,obj):
+        return json.loads(obj.goodsqrcode)
 
     def get_thms(self,obj):
         return json.loads(obj.thms)['thms'] if obj.thms else []
@@ -51,6 +59,7 @@ class OrderModelSerializer(serializers.ModelSerializer):
 
     amount = serializers.DecimalField(max_digits=16,decimal_places=2)
     yf = serializers.DecimalField(max_digits=16,decimal_places=2)
+    use_jf = serializers.DecimalField(max_digits=16,decimal_places=2)
     payamount = serializers.DecimalField(max_digits=16,decimal_places=2)
     balamount = serializers.DecimalField(max_digits=16,decimal_places=2)
 
@@ -64,6 +73,7 @@ class OrderModelSerializer(serializers.ModelSerializer):
     fhstatus_format = serializers.SerializerMethodField()
 
     address = serializers.SerializerMethodField()
+    address_format = serializers.SerializerMethodField()
     state = serializers.SerializerMethodField()
     mobile = serializers.CharField()
 
@@ -105,6 +115,16 @@ class OrderModelSerializer(serializers.ModelSerializer):
         r=json.loads(obj.address)
 
         return r if len(r) else False
+
+    def get_address_format(self,obj):
+
+        address = json.loads(obj.address)
+
+        return {
+            "mobile": address.get("phone", "未知"),
+            "name": address.get("name", "未知"),
+            "address": address.get("label", "").replace("-", "") + address.get("detail", ""),
+        } if len(address) else False
 
     def get_status_format(self,obj):
         if obj.status=='0':

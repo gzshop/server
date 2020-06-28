@@ -418,7 +418,6 @@ class OrderAPIView(viewsets.ViewSet):
         today = UtilTime().today.shift(minutes=ORDERCANLETIME*-1)
 
         for order in Order.objects.select_for_update().filter(createtime__lte=today.timestamp,status='0'):
-            # if order.status == '0':
             OrderBase(order=order).callbackStock()
             order.status = '9'
             order.save()
@@ -573,7 +572,11 @@ class OrderAPIView(viewsets.ViewSet):
     @Core_connector(isPasswd=True,isTicket=True)
     def OrderGet(self, request):
 
-        orderQuery = Order.objects.filter(userid=request.user['userid'])
+        if request.user['role']['rolecode'] in ['1000','1200']:
+            orderQuery = Order.objects.filter()
+        else:
+            orderQuery = Order.objects.filter(userid=request.user['userid'])
+
         status=request.query_params_format.get("status")
         if status:
             if status == 1:
@@ -598,6 +601,8 @@ class OrderAPIView(viewsets.ViewSet):
         return {
             "data":OrderModelSerializer(query[page_start:page_end],many=True).data
         }
+
+
 
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
@@ -637,6 +642,53 @@ class OrderAPIView(viewsets.ViewSet):
         try:
             obj = Order.objects.get(orderid=orderid)
             obj.kdno = kdno
+            obj.status='2'
+            obj.save()
+        except Order.DoesNotExist:
+            raise PubErrorCustom("订单不存在!")
+        return None
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True, isPasswd=True, isTicket=True)
+    def orderFhSaveGoods(self, request):
+
+        links = request.data_format.get("links")
+
+        for item in links:
+            try:
+                linkObj = OrderGoodsLink.objects.select_for_update().get(linkid=item['linkid'])
+                linkObj.goodsqrcode = json.dumps(item.get("goodsqrcode"))
+                linkObj.save()
+            except OrderGoodsLink.DoesNotExist:
+                pass
+        return None
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True, isPasswd=True, isTicket=True)
+    def orderFhSaveFh(self, request):
+
+        orderid = request.data_format.get("orderid")
+        kdno = request.data_format.get("kdno")
+
+        if kdno:
+            try:
+                obj = Order.objects.select_for_update().get(orderid=orderid)
+                obj.kdno = kdno
+                obj.save()
+            except Order.DoesNotExist:
+                raise PubErrorCustom("订单不存在!")
+        return None
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
+    def orderFh1(self,request):
+
+        orderid = request.data_format.get("orderid")
+
+        try:
+            obj = Order.objects.select_for_update().get(orderid=orderid)
+            if not len(obj.kdno):
+                raise PubErrorCustom("请先扫发货条形码!")
             obj.status='2'
             obj.save()
         except Order.DoesNotExist:

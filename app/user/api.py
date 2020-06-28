@@ -8,7 +8,7 @@ from lib.utils.exceptions import PubErrorCustom
 from app.user.serialiers import UsersSerializers
 
 from app.cache.utils import RedisCaCheHandler
-from app.user.serialiers import UsersModelSerializer,RoleModelSerializer,VipRuleModelSerializer,VipRuleModelSerializer1
+from app.user.serialiers import UsersModelSerializer,RoleModelSerializer,VipRuleModelSerializer,VipRuleModelSerializer1,ManageSerializer
 from app.user.models import Users,Role,VipRule
 from lib.utils.db import RedisUserVipHandler
 
@@ -17,8 +17,6 @@ class UserAPIView(viewsets.ViewSet):
     @list_route(methods=['GET'])
     @Core_connector(isTicket=True,isPasswd=True)
     def getUserInfo(self, request):
-
-
 
         return {"data": {
             "userInfo": {
@@ -38,6 +36,10 @@ class UserAPIView(viewsets.ViewSet):
     def getUser(self, request):
 
         query = Users.objects.filter(rolecode__startswith='4')
+
+        if request.query_params_format.get("isvip"):
+            query = query.filter(isvip=request.query_params_format.get("isvip"))
+
         if request.query_params_format.get("userid"):
             query = query.filter(userid=request.query_params_format.get("userid"))
 
@@ -147,5 +149,68 @@ class UserAPIView(viewsets.ViewSet):
     def del_vip_rule(self,request,*args, **kwargs):
 
         VipRule.objects.filter(id=request.data_format.get("id")).delete()
+
+        return None
+
+    @list_route(methods=['GET'])
+    @Core_connector(isPagination=True,isTicket=True,isPasswd=True)
+    def manageadd_query(self, request, *args, **kwargs):
+        user = Users.objects.raw("""
+                SELECT t1.*,t2.name as rolename FROM user as t1
+                  INNER JOIN `role` t2 on t1.rolecode = t2.rolecode
+                  WHERE t2.roletype = 1 and t1.status=0 and t1.rolecode != '1000'
+            """)
+
+        return {"data": ManageSerializer(user, many=True).data}
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,isTicket=True,isPasswd=True)
+    def manageadd_del(self, request, *args, **kwargs):
+        userid = request.data_format.get('userid')
+
+        Users.objects.filter(userid=userid).delete()
+
+        return None
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,isTicket=True,isPasswd=True)
+    def manageadd_add(self, request, *args, **kwargs):
+
+        uuid = request.data_format.get("uuid")
+        name = request.data_format.get("name")
+        rolecode = request.data_format.get("rolecode")
+
+        if Users.objects.filter(uuid=uuid).count():
+            raise PubErrorCustom("该登录名已存在!")
+
+        Users.objects.create(**dict(
+            name = name,
+            uuid = uuid,
+            mobile = uuid,
+            rolecode = rolecode,
+        ))
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,isTicket=True,isPasswd=True)
+    def manageadd_upd(self, request, *args, **kwargs):
+        userid = request.data_format.get("userid")
+        uuid = request.data_format.get("uuid")
+        name = request.data_format.get("name")
+        rolecode = request.data_format.get("rolecode")
+        passwd = request.data_format.get("passwd")
+
+        if Users.objects.filter(uuid=uuid).count():
+            raise PubErrorCustom("该登录名已存在!")
+
+        try:
+            user = Users.objects.get(userid=userid)
+        except Users.DoesNotExist:
+            raise PubErrorCustom("用户不存在!")
+
+        user.name = name if name else user.name
+        user.uuid = uuid if uuid else user.uuid
+        user.rolecode = rolecode if rolecode else user.rolecode
+        user.passwd = passwd if passwd else user.passwd
+        user.save()
 
         return None

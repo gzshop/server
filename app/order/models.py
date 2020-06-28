@@ -56,6 +56,7 @@ class OrderGoodsLink(models.Model):
 
     skugoodslinkid = models.IntegerField(verbose_name="商品sku关联表id",default=0)
     skugoodslabel = models.CharField(max_length=60,verbose_name="说明")
+    goodsqrcode = models.CharField(max_length=1024,default="[]",verbose_name="商品条形码")
 
     createtime = models.BigIntegerField(default=0)
     updtime = models.BigIntegerField(default=0)

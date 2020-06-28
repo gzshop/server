@@ -32,6 +32,16 @@ first = [
                 "children": []
             },
             {
+                "label": "管理员管理",
+                "path": 'manage',
+                "component": 'views/userinfo/manage',
+                "meta": {
+                    "i18n": 'manage'
+                },
+                "icon": 'el-icon-user-solid',
+                "children": []
+            },
+            {
                 "label": "安全管理",
                 "path": 'pw',
                 "component": 'views/userinfo/pw',
@@ -193,6 +203,16 @@ first = [
                 "component": 'views/systemManagement/appHandler',
                 "meta": {
                     "i18n": 'appHandler'
+                },
+                "icon": 'el-icon-setting',
+                "children": []
+            },
+            {
+                "label": "app管理端版本管理",
+                "path": 'appAdminHandler',
+                "component": 'views/systemManagement/appAdminHandler',
+                "meta": {
+                    "i18n": 'appAdminHandler'
                 },
                 "icon": 'el-icon-setting',
                 "children": []
