@@ -590,6 +590,12 @@ class OrderAPIView(viewsets.ViewSet):
         if request.query_params_format.get("orderid"):
             orderQuery = orderQuery.filter(orderid=request.query_params_format.get("orderid"))
 
+        if request.query_params_format.get("time"):
+            print(request.query_params_format.get("time"))
+            start_date = request.query_params_format.get("time").split("&&")[0]
+            end_date = request.query_params_format.get("time").split("&&")[1]
+            orderQuery = orderQuery.filter(createtime__gte=UtilTime().string_to_timestamp(start_date),createtime__lte=UtilTime().string_to_timestamp(end_date))
+
         page=int(request.query_params_format.get("page",1))
 
         page_size = request.query_params_format.get("page_size",10)
