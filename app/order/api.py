@@ -608,6 +608,59 @@ class OrderAPIView(viewsets.ViewSet):
             "data":OrderModelSerializer(query[page_start:page_end],many=True).data
         }
 
+    @list_route(methods=['GET'])
+    @Core_connector(isPasswd=True, isTicket=True)
+    def OrderGet1(self, request):
+
+        status = request.query_params_format.get("status")
+        time = request.query_params_format.get("time")
+        orderid = request.query_params_format.get("orderid")
+        mobile = request.query_params_format.get("mobile")
+        gdid = request.query_params_format.get("gdid")
+
+        query_format = str()
+
+        if status:
+            if status == 1:
+                query_format = query_format + " and t1.status='0'"
+            elif status == 2:
+                query_format = query_format + " and t1.status='1'"
+            elif status == 3:
+                query_format = query_format + " and t1.status='2'"
+            elif status == 4:
+                query_format = query_format + " and t1.status in ('3','4')"
+
+        if time:
+            start_date = time.split("&&")[0]
+            end_date = time.split("&&")[1]
+            query_format = query_format + " and t1.createtime>={} and t1.createtime<={}".format(
+                UtilTime().string_to_timestamp(start_date),
+                UtilTime().string_to_timestamp(end_date)
+            )
+
+        if orderid:
+            query_format = query_format + " and t1.orderid='{}'".format(orderid)
+
+        if mobile:
+            query_format = query_format + " and t2.mobile='{}'".format(mobile)
+
+        if gdid:
+            query_format = query_format + " and t1.orderid in (SELECT orderid FROM ordergoodslink where gdid='{}')".format(gdid)
+
+        orders = Order.objects.raw("""
+            SELECT t1.*,t2.mobile FROM `order` as t1
+            INNER JOIN user as t2 ON t1.userid=t2.userid
+            WHERE 1=1 %s order by t1.createtime desc
+        """ % (query_format), [])
+
+        page = int(request.query_params_format.get("page", 1))
+        page_size = request.query_params_format.get("page_size", 10)
+        page_start = page_size * page - page_size
+        page_end = page_size * page
+
+        return {
+            "data": OrderModelSerializer(orders[page_start:page_end], many=True).data
+        }
 
 
     @list_route(methods=['POST'])
@@ -658,6 +711,9 @@ class OrderAPIView(viewsets.ViewSet):
     @Core_connector(isTransaction=True, isPasswd=True, isTicket=True)
     def orderFhSaveGoods(self, request):
 
+        orderid = request.data_format.get("orderid")
+        kdno = request.data_format.get("kdno")
+
         links = request.data_format.get("links")
 
         for item in links:
@@ -667,6 +723,15 @@ class OrderAPIView(viewsets.ViewSet):
                 linkObj.save()
             except OrderGoodsLink.DoesNotExist:
                 pass
+
+        if kdno:
+            try:
+                obj = Order.objects.select_for_update().get(orderid=orderid)
+                obj.kdno = kdno
+                obj.save()
+            except Order.DoesNotExist:
+                raise PubErrorCustom("订单不存在!")
+
         return None
 
     @list_route(methods=['POST'])
