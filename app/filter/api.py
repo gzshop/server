@@ -76,6 +76,7 @@ class FilterAPIView(viewsets.ViewSet):
                     gdimg=item['gdimg'],
                     gdtext=item['gdtext'],
                     gdprice=item['gdprice'],
+                    gdnum=item['gdnum'],
                     sort=item['sort']
                 ))
 
@@ -86,6 +87,7 @@ class FilterAPIView(viewsets.ViewSet):
                     gdimg=item['gdimg'],
                     gdtext=item['gdtext'],
                     gdprice=item['gdprice'],
+                    gdnum=item['gdnum'],
                     sort=item['sort']
                 ))
 
@@ -154,7 +156,8 @@ class FilterAPIView(viewsets.ViewSet):
                         gdname=res['gdname'],
                         gdprice=res['gdprice'],
                         gdtext=res['gdtext'],
-                        sort = res['sort']
+                        sort = res['sort'],
+                        gdnum = res['gdnum']
                     ))
             goods.sort(key=lambda k: (k.get('sort', 0)), reverse=False)
 
