@@ -234,6 +234,7 @@ class FilterAPIView(viewsets.ViewSet):
                         gdname=item['gdname'],
                         sort=item['sort'],
                         gdtext=item['gdtext'],
+                        gdnum=item['gdnum']
                     ))
 
                 if item['isvip'] != '0':
@@ -243,6 +244,7 @@ class FilterAPIView(viewsets.ViewSet):
                         gdname=item['gdname'],
                         sort=item['sort'],
                         gdtext=item['gdtext'],
+                        gdnum=item['gdnum']
                     ))
 
             goods.sort(key=lambda k: (k.get('sort', 0)), reverse=False)
