@@ -76,7 +76,7 @@ class FilterAPIView(viewsets.ViewSet):
                     gdimg=item['gdimg'],
                     gdtext=item['gdtext'],
                     gdprice=item['gdprice'],
-                    gdnum=item['gdnum'],
+                    gdnum= sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort') ]),
                     sort=item['sort']
                 ))
 
@@ -87,7 +87,7 @@ class FilterAPIView(viewsets.ViewSet):
                     gdimg=item['gdimg'],
                     gdtext=item['gdtext'],
                     gdprice=item['gdprice'],
-                    gdnum=item['gdnum'],
+                    gdnum= sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort') ]),
                     sort=item['sort']
                 ))
 
@@ -110,15 +110,18 @@ class FilterAPIView(viewsets.ViewSet):
             must_key_value=request.query_params_format.get('gdid')
         ).run()
         if res['gdstatus'] == '0':
+            goodslinksku = GoodsLinkSkuSearchSerializer(
+                GoodsLinkSku.objects.filter(id__in=res['gdskulist']).order_by('sort'), many=True).data
+            print(goodslinksku)
             data=dict(
                     gdid = res['gdid'],
                     gdimg = res['gdimg'],
-                    gdnum = res['gdnum'],
+                    gdnum =  sum([ i['stock'] for i in goodslinksku]),
                     gdname = res['gdname'],
                     gdprice = res['gdprice'],
                     detail = res['detail'],
                     gdsku=res['gdsku'],
-                    goodslinksku=GoodsLinkSkuSearchSerializer(GoodsLinkSku.objects.filter(id__in=res['gdskulist']).order_by('sort'),many=True).data
+                    goodslinksku = goodslinksku
                 )
 
             data['yf'] = calyf(res['yf'])

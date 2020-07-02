@@ -22,6 +22,7 @@ class GoodsLinkSkuSearchSerializer(serializers.Serializer):
     specValueId1  = serializers.SerializerMethodField()
     specValueId2 = serializers.SerializerMethodField()
     specValueId3 = serializers.SerializerMethodField()
+    stock = serializers.IntegerField()
     jf = serializers.DecimalField(max_digits=18,decimal_places=2)
 
     def get_specValueId1(self, obj):
@@ -104,9 +105,13 @@ class GoodsForSearchSerializer(serializers.Serializer):
     gdprice = serializers.DecimalField(max_digits=16,decimal_places=2)
     gdimg = serializers.SerializerMethodField()
     gdtext = serializers.CharField()
+    gdnum  = serializers.SerializerMethodField()
 
     def get_gdimg(self,obj):
         return json.loads(obj.gdimg)
+
+    def get_gdnum(self,obj):
+        return sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=json.loads(obj.gdskulist)).order_by('sort') ])
 
 
 class CardModelSerializer(serializers.ModelSerializer):
