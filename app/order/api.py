@@ -235,8 +235,12 @@ class OrderAPIView(viewsets.ViewSet):
                 order.address = json.dumps(data.get("address", {}))
             else:
                 raise PubErrorCustom("已发货,不能修改地址!")
-        if data.get("desc", ""):
+
+        if data.get("desc",None):
             order.memo = data.get("desc", "")
+
+        if data.get("kdno",None):
+            order.kdno = data.get("kdno","")
 
         order.save()
 
