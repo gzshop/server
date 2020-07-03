@@ -81,6 +81,7 @@ class FilterWebAPIView(viewsets.ViewSet):
     def OrderGetWeb(self, request):
 
         query_format = str()
+        query_params = []
 
         if request.query_params_format.get("status"):
             query_format = query_format + " and t1.status='{}'".format(request.query_params_format.get("status"))
@@ -93,6 +94,10 @@ class FilterWebAPIView(viewsets.ViewSet):
                 send_toTimestamp(request.query_params_format.get("startdate")),
                 send_toTimestamp(request.query_params_format.get("enddate"))
             )
+        if request.query_params_format.get("address"):
+            query_format = query_format + " and t1.address like %s"
+            query_params.append("%{}%".format(request.query_params_format.get("address")))
+
         if request.query_params_format.get("mobile"):
             query_format = query_format + " and t2.mobile='{}'".format(request.query_params_format.get("mobile"))
 
@@ -100,7 +105,7 @@ class FilterWebAPIView(viewsets.ViewSet):
             SELECT t1.*,t2.mobile FROM `order` as t1
             INNER JOIN user as t2 ON t1.userid=t2.userid
             WHERE 1=1 %s order by t1.createtime desc
-        """%(query_format),[])
+        """%(query_format),query_params)
 
         page = int(request.query_params_format.get("page", 1))
         page_size = request.query_params_format.get("page_size", 10)
