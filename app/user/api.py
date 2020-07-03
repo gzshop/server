@@ -2,11 +2,13 @@
 from project.config_include.common import ServerUrl
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
+from lib.utils.db import RedisTokenHandler
 from lib.utils.mytime import send_toTimestamp
 from lib.core.decorator.response import Core_connector
 from lib.utils.exceptions import PubErrorCustom
 from app.user.serialiers import UsersSerializers
-
+from lib.utils.string_extension import get_token
+from app.cache.serialiers import UserModelSerializerToRedis
 from app.cache.utils import RedisCaCheHandler
 from app.user.serialiers import UsersModelSerializer,RoleModelSerializer,VipRuleModelSerializer,VipRuleModelSerializer1,ManageSerializer
 from app.user.models import Users,Role,VipRule
@@ -66,6 +68,35 @@ class UserAPIView(viewsets.ViewSet):
             "data": UsersModelSerializer(res[page_start:page_end], many=True).data,
             "header": headers
         }
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTicket=True,isPasswd=True,isTransaction=True)
+    def userStop(self, request):
+
+        """
+        拉黑用户
+        :param request:
+        :return:
+        """
+
+        userids = request.data_format.get("userids", [])
+
+        Users.objects.filter(userid__in=userids).update(status=2)
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTicket=True,isPasswd=True,isTransaction=True)
+    def userSettingOk(self, request):
+
+        """
+        设置为正常用户
+        :param request:
+        :return:
+        """
+
+        userids = request.data_format.get("userids", [])
+
+        Users.objects.filter(userid__in=userids).update(status=0)
+
 
     @list_route(methods=['POST'])
     @Core_connector(isTicket=True,isPasswd=True,isTransaction=True)

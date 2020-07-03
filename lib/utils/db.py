@@ -174,7 +174,7 @@ class RedisVercodeHandler(RedisHandler):
     def set(self,mobile,vercode):
         self.key = "vercode_{}".format(mobile)
         self.redis_client.set(self.key, vercode)
-        self.redis_client.expire(self.key, 120)
+        self.redis_client.expire(self.key, 300)
 
     def get(self,mobile):
         self.key = "vercode_{}".format(mobile)
@@ -264,3 +264,26 @@ class RedisUserVipHandler(RedisHandler):
     def get(self):
         res = self.redis_client.get(self.key)
         return json.loads(res.decode('utf-8')) if res else []
+
+
+class RedisUserSysSetting(RedisHandler):
+    """
+    系统设置
+        data:{
+            "lxwm":"",
+            "ggl":"",
+            "gx_title":"",
+            "gx_content":""
+        }
+    """
+    def __init__(self,**kwargs):
+        kwargs.setdefault('db', 'token')
+        super().__init__(**kwargs)
+        self.key = "sys_setting"
+
+    def set(self,data=None):
+        self.redis_client.set(self.key, json.dumps(data))
+
+    def get(self):
+        res = self.redis_client.get(self.key)
+        return json.loads(res.decode('utf-8')) if res else {}

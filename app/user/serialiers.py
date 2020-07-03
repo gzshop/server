@@ -68,6 +68,15 @@ class UsersModelSerializer(serializers.ModelSerializer):
 
     exprise_format = serializers.SerializerMethodField()
 
+    status_format = serializers.SerializerMethodField()
+
+    def get_status_format(self,obj):
+        if obj.status=='1':
+            return "到期"
+        elif obj.status=='2':
+            return "冻结"
+        else:
+            return "正常"
 
     def get_exprise_format(self,obj):
 

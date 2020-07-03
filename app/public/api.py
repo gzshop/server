@@ -7,7 +7,7 @@ from lib.utils.exceptions import PubErrorCustom
 
 from app.public.models import Banner,AttachMent,AttachMentGroup,OtherMemo,Sysparams
 from app.cache.utils import RedisCaCheHandler
-from lib.utils.db import RedisAppHandler,RedisAppHandlerAdmin
+from lib.utils.db import RedisAppHandler,RedisAppHandlerAdmin,RedisUserSysSetting
 
 from app.public.serialiers import SysparamsModelSerializer
 from app.order.utils import cityLimit
@@ -285,6 +285,42 @@ class PublicAPIView(viewsets.ViewSet):
     def appAdminGet(self, request):
 
         return {"data":RedisAppHandlerAdmin().get()}
+
+    @list_route(methods=['POST'])
+    @Core_connector(isPasswd=True)
+    def sysSettingUpdate(self, request):
+
+        lxwm = request.data_format.get("lxwm", None)
+        ggl = request.data_format.get("ggl", None)
+        gx_title = request.data_format.get("gx_title", None)
+        gx_content = request.data_format.get("gx_content", None)
+
+        if not lxwm:
+            raise PubErrorCustom("联系我们不能为空!")
+
+        if not ggl:
+            raise PubErrorCustom("公告栏消息不能为空!")
+
+        if not gx_title:
+            raise PubErrorCustom("供需标题不能为空!")
+
+        if not gx_content:
+            raise PubErrorCustom("供需内容不能为空")
+
+        RedisUserSysSetting().set(data={
+            "lxwm": lxwm,
+            "ggl": ggl,
+            "gx_title": gx_title,
+            "gx_content":gx_content
+        })
+
+        return None
+
+    @list_route(methods=['GET'])
+    @Core_connector(isPasswd=True)
+    def sysSettingGet(self, request):
+
+        return {"data":RedisUserSysSetting().get()}
 
 
     @list_route(methods=['GET'])

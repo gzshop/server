@@ -81,6 +81,16 @@ first = [
                 },
                 "icon": 'el-icon-picture-outline-round',
                 "children": []
+            },
+            {
+                "label": "公告/联系我们/供需设置",
+                "path": '/lxwm',
+                "component": 'views/shopinfo/lxwm',
+                "meta": {
+                    "i18n": 'lxwm'
+                },
+                "icon": 'el-icon-picture-outline-round',
+                "children": []
             }
         ]
     },

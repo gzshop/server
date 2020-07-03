@@ -6,7 +6,7 @@ import json
 from lib.utils.exceptions import PubErrorCustom
 from lib.core.decorator.response import Core_connector
 from lib.utils.db import RedisCaCheHandlerCitySheng,RedisCaCheHandlerCityShi,RedisCaCheHandlerCityXian
-
+from lib.utils.db import RedisUserSysSetting
 from app.cache.utils import RedisCaCheHandler
 from app.user.models import Users
 from app.order.models import Address
@@ -97,6 +97,22 @@ class FilterAPIView(viewsets.ViewSet):
             rdata['newgoods'] = rdata['newgoods'][:len(rdata['newgoods'])]
         rdata['newgoods'].sort(key=lambda k: (k.get('sort', 0)), reverse=False)
 
+
+        rdata['settings'] = RedisUserSysSetting().get()
+
+        if rdata['settings']:
+            s=[]
+            i=0
+            a=""
+            for item in rdata['settings']['gx_title']:
+               i+=1
+               a+=item
+               if i>=25:
+                   s.append(a)
+                   a=""
+                   i=0
+
+            rdata['settings']['gx_title'] = s
         return {"data": rdata}
 
     @list_route(methods=['GET'])
@@ -307,9 +323,6 @@ class FilterAPIView(viewsets.ViewSet):
         return {"data":data}
 
 
-
-
-
     @list_route(methods=['GET'])
     @Core_connector(isPasswd=True)
     def getGoodsList(self, request):
@@ -327,6 +340,29 @@ class FilterAPIView(viewsets.ViewSet):
                 must_key_value=item
             ).run())
         return {"data":objs.sort(key=lambda k: (k.get('sort', 0)), reverse=False)}
+
+    @list_route(methods=['GET'])
+    @Core_connector(isPasswd=True)
+    def getLxwm(self,request):
+        """
+         获取公告数据
+         :param request:
+         :return:
+         """
+
+        obj = RedisCaCheHandler(
+            method="filter",
+            serialiers="OtherMemoModelSerializerToRedis",
+            table="OtherMemo"
+        ).run()
+        return {"data": obj[0] if obj else False}
+
+
+    @list_route(methods=['GET'])
+    @Core_connector(isPasswd=True)
+    def sysSettingGet(self, request):
+
+        return {"data":RedisUserSysSetting().get()}
 
 
     @list_route(methods=['GET'])
