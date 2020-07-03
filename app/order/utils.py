@@ -405,7 +405,7 @@ class OrderBase(object):
                     for itemCity in json.loads(goodsObj.limit_citys):
                         if cityHandler.isExists(itemCity, city):
                             logger.info("收货地址{},限购城市{}".format(itemCity, city))
-                            raise PubErrorCustom("{},库存不够!".format(goodsObj.gdname))
+                            raise PubErrorCustom("您已超过限购数量!")
         else:
 
             if goodsObj.limit_unit == 'A':
@@ -419,7 +419,7 @@ class OrderBase(object):
                 okcount = queryBuyOkGoodsCount(order.userid, goodsObj.gdid, start, end)
                 logger.info("目前购买->{},实际已购买->{},规则数量->{}".format(gdnum, okcount, goodsObj.limit_number))
                 if gdnum + okcount > goodsObj.limit_number:
-                    raise PubErrorCustom("{},库存不够!".format(goodsObj.gdname))
+                    raise PubErrorCustom("您已超过限购数量")
 
     def callbackStock(self):
         order = self.order

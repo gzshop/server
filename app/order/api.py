@@ -299,6 +299,9 @@ class OrderAPIView(viewsets.ViewSet):
         except Order.DoesNotExist:
             raise PubErrorCustom("订单异常!")
 
+        if not len(json.loads(order.address)):
+            raise PubErrorCustom("请返回订单页填写收货地址!")
+
         try:
             user = Users.objects.select_for_update().get(userid=order.userid)
         except Users.DoesNotExist:
