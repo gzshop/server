@@ -99,20 +99,9 @@ class FilterAPIView(viewsets.ViewSet):
 
 
         rdata['settings'] = RedisUserSysSetting().get()
-
+        print(rdata['settings'])
         if rdata['settings']:
-            s=[]
-            i=0
-            a=""
-            for item in rdata['settings']['gx_title']:
-               i+=1
-               a+=item
-               if i>=25:
-                   s.append(a)
-                   a=""
-                   i=0
-
-            rdata['settings']['gx_title'] = s
+            rdata['settings']['gx_title'] = rdata['settings']['gx_title'].split("\n")
         return {"data": rdata}
 
     @list_route(methods=['GET'])
