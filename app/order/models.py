@@ -121,6 +121,8 @@ class Order(models.Model):
 
     mobile = None
 
+    isprint = models.CharField(max_length=1,verbose_name="是否已打印,0-是,1-否",default="1")
+
     def save(self, *args, **kwargs):
 
         if not self.orderid:

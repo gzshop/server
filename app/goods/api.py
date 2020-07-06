@@ -96,6 +96,30 @@ class GoodsAPIView(viewsets.ViewSet):
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True,
                     isPasswd=True,
+                    isTicket=True)
+    def GoodsUp(self, request, *args, **kwargs):
+
+        status = request.data_format.get("status")
+
+        if not status:
+            raise PubErrorCustom("系统异常!")
+
+        for item in Goods.objects.filter(gdid__in=request.data_format.get("ids")):
+            item.gdstatus  = status
+            item.save()
+
+            RedisCaCheHandler(
+                method="save",
+                serialiers="GoodsModelSerializerToRedis",
+                table="goods",
+                filter_value=item,
+                must_key="gdid",
+            ).run()
+
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,
+                    isPasswd=True,
                     isTicket=True,
                     serializer_class=GoodsModelSerializer,
                     model_class=Goods)
@@ -204,6 +228,8 @@ class GoodsAPIView(viewsets.ViewSet):
                 item['attribute'] = item['gdsku']
             for item in obj:
                 item['skuList'] =  GoodsLinkSkuSearchSerializer(GoodsLinkSku.objects.filter(id__in=item['gdskulist']),many=True).data
+                item['gdnum1'] = sum([ i['active_num'] for i in item['skuList']])
+
         obj.sort(key=lambda k: (k.get('sort', 0)), reverse=False)
         return {"data":obj}
 

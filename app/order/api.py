@@ -468,6 +468,12 @@ class OrderAPIView(viewsets.ViewSet):
 
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True, isPasswd=True, isTicket=True)
+    def OrderPrint(self, request):
+
+        Order.objects.filter(orderid=request.data_format.get("orderid")).update(isprint='0')
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True, isPasswd=True, isTicket=True)
     def OrderDel(self, request):
         try:
             order = Order.objects.select_for_update().get(orderid=request.data_format.get("orderid"))

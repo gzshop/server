@@ -172,12 +172,12 @@ class FilterWebAPIView(viewsets.ViewSet):
             ]
         }
         data['counts'][0]['num'] = Users.objects.filter(rolecode='4001').count()
-        data['counts'][1]['num'] = Order.objects.filter().count()
+        data['counts'][1]['num'] = Order.objects.filter(status='1').count()
 
         start_date = ut.string_to_timestamp(ut.arrow_to_string(format_v="YYYY-MM-DD") + ' 00:00:00')
         end_date = ut.string_to_timestamp(ut.arrow_to_string(format_v="YYYY-MM-DD") + ' 23:59:59')
         data['counts'][2]['num'] = 0.0
-        orders = Order.objects.filter(createtime__lte = end_date , createtime__gte = start_date )
+        orders = Order.objects.filter(createtime__lte = end_date , createtime__gte = start_date,status='1' )
         if orders.exists():
             for item in orders:
                 data['counts'][2]['num'] += float(item.amount)
