@@ -139,7 +139,6 @@ class FilterAPIView(viewsets.ViewSet):
     @Core_connector(isPasswd=True)
     def getGoodsForTheme(self,request):
 
-
         obj = RedisCaCheHandler(
             method="get",
             serialiers="GoodsThemeModelSerializerToRedis",

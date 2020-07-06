@@ -673,13 +673,8 @@ class OrderAPIView(viewsets.ViewSet):
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
     def OrderConfirm(self, request):
-        try:
-            Order.objects.get(orderid=request.data_format.get("orderid")).update(status='3')
-        except Order.DoesNotExist:
-            raise PubErrorCustom("订单号不存在!")
-        return None
 
-
+        Order.objects.filter(orderid=request.data_format.get("orderid")).update(status='3')
 
     @list_route(methods=['GET'])
     @Core_connector(isPasswd=True,isTicket=True)
