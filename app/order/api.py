@@ -630,6 +630,7 @@ class OrderAPIView(viewsets.ViewSet):
         orderid = request.query_params_format.get("orderid")
         mobile = request.query_params_format.get("mobile")
         gdid = request.query_params_format.get("gdid")
+        isprint = request.query_params_format.get("isprint")
 
         query_format = str()
         query_params=[]
@@ -651,6 +652,9 @@ class OrderAPIView(viewsets.ViewSet):
                 UtilTime().string_to_timestamp(start_date),
                 UtilTime().string_to_timestamp(end_date)
             )
+            
+        if isprint:
+            query_format = query_format + " and t1.isprint='{}'".format(isprint)
 
         if orderid:
             query_format = query_format + " and t1.orderid='{}'".format(orderid)
