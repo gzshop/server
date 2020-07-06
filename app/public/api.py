@@ -292,8 +292,7 @@ class PublicAPIView(viewsets.ViewSet):
 
         lxwm = request.data_format.get("lxwm", None)
         ggl = request.data_format.get("ggl", None)
-        gx_title = request.data_format.get("gx_title", None)
-        gx_content = request.data_format.get("gx_content", None)
+        gx = request.data_format.get("gx", [])
 
         if not lxwm:
             raise PubErrorCustom("联系我们不能为空!")
@@ -301,17 +300,10 @@ class PublicAPIView(viewsets.ViewSet):
         if not ggl:
             raise PubErrorCustom("公告栏消息不能为空!")
 
-        if not gx_title:
-            raise PubErrorCustom("供需标题不能为空!")
-
-        if not gx_content:
-            raise PubErrorCustom("供需内容不能为空")
-
         RedisUserSysSetting().set(data={
             "lxwm": lxwm,
             "ggl": ggl,
-            "gx_title": gx_title,
-            "gx_content":gx_content
+            "gx": gx,
         })
 
         return None
