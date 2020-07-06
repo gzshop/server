@@ -79,6 +79,12 @@ class OrderModelSerializer(serializers.ModelSerializer):
 
     payamount1 = serializers.SerializerMethodField()
 
+    kdno = serializers.SerializerMethodField()
+
+    def get_kdno(self,obj):
+
+        return json.loads(obj.kdno)
+
     def get_bstatusformat(self,obj):
         if obj.before_status == '1':
             return " 申请退款中"
@@ -178,8 +184,11 @@ class OrderModelSerializer1(serializers.Serializer):
     yf = serializers.DecimalField(max_digits=16,decimal_places=2)
     address = serializers.SerializerMethodField()
     before_status = serializers.CharField()
-    kdno = serializers.CharField()
+    kdno = serializers.SerializerMethodField()
     memo = serializers.CharField()
+
+    def get_kdno(self,obj):
+        return json.loads(obj.kdno)
 
     def get_apply_refund_time_format(self,obj):
 

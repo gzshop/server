@@ -240,7 +240,7 @@ class OrderAPIView(viewsets.ViewSet):
             order.memo = data.get("desc", "")
 
         if data.get("kdno",None):
-            order.kdno = data.get("kdno","")
+            order.kdno = json.dumps(data.get("kdno",[]))
 
         order.save()
 
@@ -626,6 +626,7 @@ class OrderAPIView(viewsets.ViewSet):
         gdid = request.query_params_format.get("gdid")
 
         query_format = str()
+        query_params=[]
 
         if status:
             if status == 1:
@@ -651,6 +652,10 @@ class OrderAPIView(viewsets.ViewSet):
         if mobile:
             query_format = query_format + " and t2.mobile='{}'".format(mobile)
 
+        if request.query_params_format.get("address"):
+            query_format = query_format + " and t1.address like %s"
+            query_params.append("%{}%".format(request.query_params_format.get("address")))
+
         if gdid:
             query_format = query_format + " and t1.orderid in (SELECT orderid FROM ordergoodslink where gdid='{}')".format(gdid)
 
@@ -658,7 +663,7 @@ class OrderAPIView(viewsets.ViewSet):
             SELECT t1.*,t2.mobile FROM `order` as t1
             INNER JOIN user as t2 ON t1.userid=t2.userid
             WHERE 1=1 %s order by t1.createtime desc
-        """ % (query_format), [])
+        """ % (query_format), query_params)
 
         page = int(request.query_params_format.get("page", 1))
         page_size = request.query_params_format.get("page_size", 10)
@@ -726,10 +731,10 @@ class OrderAPIView(viewsets.ViewSet):
             except OrderGoodsLink.DoesNotExist:
                 pass
 
-        if kdno:
+        if kdno and len(kdno):
             try:
                 obj = Order.objects.select_for_update().get(orderid=orderid)
-                obj.kdno = kdno
+                obj.kdno = json.dumps(kdno)
                 obj.save()
             except Order.DoesNotExist:
                 raise PubErrorCustom("订单不存在!")
@@ -743,10 +748,10 @@ class OrderAPIView(viewsets.ViewSet):
         orderid = request.data_format.get("orderid")
         kdno = request.data_format.get("kdno")
 
-        if kdno:
+        if kdno and len(kdno):
             try:
                 obj = Order.objects.select_for_update().get(orderid=orderid)
-                obj.kdno = kdno
+                obj.kdno = json.dumps(kdno)
                 obj.save()
             except Order.DoesNotExist:
                 raise PubErrorCustom("订单不存在!")

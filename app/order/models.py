@@ -114,7 +114,7 @@ class Order(models.Model):
 
     yf = models.DecimalField(verbose_name="运费",max_digits=18,decimal_places=6,default=0.0)
 
-    kdno = models.CharField(max_length=60,verbose_name="快递单号",default="")
+    kdno = models.CharField(max_length=1024,verbose_name="快递单号",default="")
     kdname = models.CharField(max_length=60,verbose_name="快递公司简称",default="")
 
     paytype = models.CharField(max_length=1,verbose_name="支付方式 2-支付宝",default='2')
