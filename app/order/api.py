@@ -420,7 +420,7 @@ class OrderAPIView(viewsets.ViewSet):
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True, isPasswd=False)
     def OrderCanleSysEx(self, request):
-        logger.info("晚上批量处理取消订单!")
+        logger.info("晚上批量处理订单!")
 
         today = UtilTime().today.shift(minutes=ORDERCANLETIME*-1)
 
@@ -429,7 +429,19 @@ class OrderAPIView(viewsets.ViewSet):
             order.status = '9'
             order.save()
 
-        logger.info("晚上批量处理取消订单成功!")
+        today = UtilTime().today.shift(days=-7)
+
+        for order in Order.objects.select_for_update().filter(createtime__lte=today.timestamp,status='2'):
+            order.status = '3'
+            order.save()
+
+        today = UtilTime().today.shift(days=-1)
+
+        for order in Order.objects.select_for_update().filter(createtime__lte=today.timestamp,status='9'):
+            order.status = '8'
+            order.save()
+
+        logger.info("晚上批量处理成功!")
 
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True, isPasswd=False)
@@ -652,7 +664,7 @@ class OrderAPIView(viewsets.ViewSet):
                 UtilTime().string_to_timestamp(start_date),
                 UtilTime().string_to_timestamp(end_date)
             )
-            
+
         if isprint:
             query_format = query_format + " and t1.isprint='{}'".format(isprint)
 
