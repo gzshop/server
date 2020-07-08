@@ -431,7 +431,7 @@ class OrderAPIView(viewsets.ViewSet):
 
         today = UtilTime().today.shift(days=-7)
 
-        for order in Order.objects.select_for_update().filter(createtime__lte=today.timestamp,status='2'):
+        for order in Order.objects.select_for_update().filter(fhtime__lte=today.timestamp,status='2'):
             order.status = '3'
             order.save()
 
