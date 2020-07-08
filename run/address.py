@@ -25,8 +25,9 @@ if __name__=='__main__':
 
     day = UtilTime().string_to_arrow("2020-06-24 18","YYYY-MM-DD HH")
 
-    with transaction.atomic():
-        for item in Order.objects.select_for_update().filter():
-            item.address = json.loads(item.address)
-            item.address = json.dumps(item.address,ensure_ascii=False)
-            item.save()
+    for item in Order.objects.filter():
+        with transaction.atomic():
+            for inner_item in Order.objects.select_for_update.filter(orderid=item.orderid):
+                inner_item.address = json.loads(inner_item.address)
+                inner_item.address = json.dumps(inner_item.address,ensure_ascii=False)
+                inner_item.save()
