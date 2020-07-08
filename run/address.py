@@ -31,3 +31,4 @@ if __name__=='__main__':
             obj.address = json.loads(obj.address)
             obj.address = json.dumps(obj.address,ensure_ascii=False)
             obj.save()
+            print("{}处理结束...".format(obj.orderid))
