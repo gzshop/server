@@ -723,14 +723,16 @@ class OrderAPIView(viewsets.ViewSet):
     @list_route(methods=['POST'])
     @Core_connector(isTransaction=True,isPasswd=True,isTicket=True)
     def orderFh(self,request):
+
         orderid = request.data_format.get("orderid")
-        kdno = request.data_format.get("kdno")
-        if not kdno:
+        kdno = request.data_format.get("kdno",[])
+        if not kdno or not len(kdno):
             raise PubErrorCustom("快递单号不能为空!")
         try:
             obj = Order.objects.get(orderid=orderid)
-            obj.kdno = kdno
+            obj.kdno = json.dumps(kdno)
             obj.status='2'
+            obj.fhtime = UtilTime().timestamp
             obj.save()
         except Order.DoesNotExist:
             raise PubErrorCustom("订单不存在!")
@@ -790,6 +792,7 @@ class OrderAPIView(viewsets.ViewSet):
             if not len(obj.kdno):
                 raise PubErrorCustom("请先扫发货条形码!")
             obj.status='2'
+            obj.fhtime = UtilTime().timestamp
             obj.save()
         except Order.DoesNotExist:
             raise PubErrorCustom("订单不存在!")
