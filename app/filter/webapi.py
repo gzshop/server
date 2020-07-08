@@ -103,7 +103,7 @@ class FilterWebAPIView(viewsets.ViewSet):
 
         orders = Order.objects.raw("""
             SELECT t1.*,t2.mobile FROM `order` as t1
-            INNER JOIN user as t2 ON t1.userid=t2.userid
+            INNER JOIN user as t2 ON t1.userid=t2.userid and t1.status!='8'
             WHERE 1=1 %s order by t1.createtime desc
         """%(query_format),query_params)
 
