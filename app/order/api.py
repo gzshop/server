@@ -206,7 +206,7 @@ class OrderAPIView(viewsets.ViewSet):
         if not len(data.get("address")):
             raise PubErrorCustom("收货地址不能为空!")
 
-        order.address = json.dumps(data.get("address", {}))
+        order.address = json.dumps(data.get("address", {}),ensure_ascii=False)
         order.memo = data.get("desc", "")
 
         OrderBase(order=order).checkvoidForcreateOrder(flag='city')
@@ -232,7 +232,7 @@ class OrderAPIView(viewsets.ViewSet):
 
         if len(data.get("address", {})):
             if order.status in ['0','1']:
-                order.address = json.dumps(data.get("address", {}))
+                order.address = json.dumps(data.get("address", {}),ensure_ascii=False)
             else:
                 raise PubErrorCustom("已发货,不能修改地址!")
 
