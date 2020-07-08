@@ -27,7 +27,7 @@ if __name__=='__main__':
 
     for item in Order.objects.filter():
         with transaction.atomic():
-            for inner_item in Order.objects.select_for_update.filter(orderid=item.orderid):
-                inner_item.address = json.loads(inner_item.address)
-                inner_item.address = json.dumps(inner_item.address,ensure_ascii=False)
-                inner_item.save()
+            obj = Order.objects.select_for_update().get(orderid=item.orderid)
+            obj.address = json.loads(obj.address)
+            obj.address = json.dumps(obj.address,ensure_ascii=False)
+            obj.save()
