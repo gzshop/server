@@ -26,5 +26,4 @@ if __name__=='__main__':
             if response['code'] == '10000' and response['trade_status'] == 'TRADE_SUCCESS':
                 pass
             else:
-                print("{}支付失败".format(order.orderid))
-                break
+                print(response)
