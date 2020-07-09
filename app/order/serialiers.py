@@ -186,6 +186,7 @@ class OrderModelSerializer1(serializers.Serializer):
     before_status = serializers.CharField()
     kdno = serializers.SerializerMethodField()
     memo = serializers.CharField()
+    trade_no = serializers.CharField()
 
     def get_kdno(self,obj):
         return json.loads(obj.kdno)

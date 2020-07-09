@@ -234,7 +234,7 @@ class OrderAPIView(viewsets.ViewSet):
             if order.status in ['0','1']:
                 order.address = json.dumps(data.get("address", {}),ensure_ascii=False)
             else:
-                raise PubErrorCustom("已发货,不能修改地址!")
+                raise PubErrorCustom("此状态不能修改订单地址!")
 
         if data.get("desc",None):
             order.memo = data.get("desc", "")
@@ -301,6 +301,8 @@ class OrderAPIView(viewsets.ViewSet):
 
         if not len(json.loads(order.address)):
             raise PubErrorCustom("请返回订单页填写收货地址!")
+
+        OrderBase(order=order).checkvoidForcreateOrder(flag='city')
 
         try:
             user = Users.objects.select_for_update().get(userid=order.userid)

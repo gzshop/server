@@ -397,6 +397,9 @@ class OrderBase(object):
                 except Goods.DoesNotExist :
                     raise PubErrorCustom("商品{}不存在".format(goodsObj.gdname))
 
+                if not len(json.loads(order.address)):
+                    raise PubErrorCustom("请填写收货地址!")
+
                 try:
                     city = json.loads(order.address).get("label", "").split('-')[0]
                 except Exception as e:
