@@ -14,19 +14,17 @@ django.setup()
 
 from app.order.utils import AlipayBase
 from app.order.models import Order
-from lib.utils.mytime import UtilTime
 from django.db import transaction
-
 
 if __name__=='__main__':
 
-    day = UtilTime().string_to_arrow("2020-06-24 18","YYYY-MM-DD HH")
+    for item in Order.objects.filter(status__in=['1','2','3']):
+        with transaction.atomic():
+            order = Order.objects.select_for_update().get(orderid=item.orderid)
+            response  = AlipayBase().query(orderid=order.orderid)
 
-    with transaction.atomic():
-        for item in Order.objects.select_for_update().filter(status='9',createtime__gte=day.timestamp):
-            response  = AlipayBase().query(orderid=item.orderid)
             if response['code'] == '10000' and response['trade_status'] == 'TRADE_SUCCESS':
-                print(response)
-
-                item.status = '1'
-                item.save()
+                pass
+            else:
+                print("{}支付失败".format(order.orderid))
+                break
