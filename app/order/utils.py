@@ -335,6 +335,7 @@ class AlipayBase(object):
             raise PubErrorCustom("订单不存在!")
 
         orderObj.status = '1'
+        orderObj.lastinfo = json.dumps(iData,ensure_ascii=False)
         orderObj.save()
 
         user = Users.objects.select_for_update().get(userid=orderObj.userid)
