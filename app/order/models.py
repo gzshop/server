@@ -122,7 +122,8 @@ class Order(models.Model):
 
     mobile = None
 
-    lastinfo = models.TextField()
+    trade_no = models.CharField(max_length=60,verbose_name="上游订单号",null=True,default="")
+    trade_info = models.TextField(verbose_name="上游回调信息",default="{}")
 
     isprint = models.CharField(max_length=1,verbose_name="是否已打印,0-是,1-否",default="1")
 
