@@ -209,6 +209,9 @@ class SsoAPIView(viewsets.ViewSet):
                 "appid": ""
             })
 
+        if not request.data_format.get('vercode',None):
+            raise PubErrorCustom("验证码为空!")
+
         if request.data_format.get('vercode',"1") != RedisVercodeHandler().get(user.uuid):
             raise PubErrorCustom("验证码错误!")
 
