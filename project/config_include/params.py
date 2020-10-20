@@ -11,6 +11,7 @@ import os
 
 
 ADDRESS_LIMIT = os.getenv("ADDRESS_LIMIT","贵州")
+ADDRESS_LIMIT_MOBILE = os.getenv("ADDRESS_LIMIT_MOBILE","")
 
 BASEURL = os.getenv("BASEURL","http://localhost:9018")
 VERSION = os.getenv("VERSION","v2")
