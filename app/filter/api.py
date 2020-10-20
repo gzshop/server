@@ -76,7 +76,9 @@ class FilterAPIView(viewsets.ViewSet):
                     gdimg=item['gdimg'],
                     gdtext=item['gdtext'],
                     gdprice=item['gdprice'],
-                    gdnum= sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort') ]),
+                    gdnum= \
+                        0 if request.addressBool else \
+                        sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort') ]),
                     sort=item['sort']
                 ))
 
@@ -87,7 +89,9 @@ class FilterAPIView(viewsets.ViewSet):
                     gdimg=item['gdimg'],
                     gdtext=item['gdtext'],
                     gdprice=item['gdprice'],
-                    gdnum= sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort') ]),
+                    gdnum= \
+                        0 if request.addressBool else \
+                            sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort') ]),
                     sort=item['sort']
                 ))
 
@@ -118,7 +122,7 @@ class FilterAPIView(viewsets.ViewSet):
             data=dict(
                     gdid = res['gdid'],
                     gdimg = res['gdimg'],
-                    gdnum =  sum([ i['stock'] for i in goodslinksku]),
+                    gdnum =  0 if request.addressBool else sum([ i['stock'] for i in goodslinksku]),
                     gdname = res['gdname'],
                     gdprice = res['gdprice'],
                     detail = res['detail'],
@@ -191,7 +195,12 @@ class FilterAPIView(viewsets.ViewSet):
         print(query)
         goodsObj = Goods.objects.raw(query)
 
-        return {"data":GoodsForSearchSerializer(goodsObj,many=True).data}
+        data = GoodsForSearchSerializer(goodsObj,many=True).data
+        for item in data:
+            if request.addressBool:
+                item['gdnum'] = 0
+
+        return {"data":data}
 
 
     @list_route(methods=['GET'])

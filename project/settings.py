@@ -265,6 +265,7 @@ CORS_ALLOW_HEADERS = (
     "ticket",
     "version1",
     "terminal",
+    'address',
     'total',
     'user-agent',
     'x-csrftoken',

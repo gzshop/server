@@ -120,6 +120,8 @@ class OrderAPIView(viewsets.ViewSet):
         if not len(data['data']['goods']):
             raise PubErrorCustom("购买商品不能为空!")
 
+        if request.addressBool:
+            raise PubErrorCustom("无库存!")
 
         # try:
         #     user=Users.objects.select_for_update().get(userid=request.user['userid'])

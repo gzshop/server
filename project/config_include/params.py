@@ -9,6 +9,9 @@ import os
 
 import os
 
+
+ADDRESS_LIMIT = os.getenv("ADDRESS_LIMIT","贵州")
+
 BASEURL = os.getenv("BASEURL","http://localhost:9018")
 VERSION = os.getenv("VERSION","v2")
 APIURL = "{}/{}{}".format(BASEURL,VERSION,"/api")
