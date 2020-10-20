@@ -19,6 +19,8 @@ from app.order.utils import calyf
 
 from app.public.serialiers import SysparamsModelSerializer,Sysparams
 
+# from app.utils import LimitGoods
+
 
 class FilterAPIView(viewsets.ViewSet):
 
@@ -68,6 +70,10 @@ class FilterAPIView(viewsets.ViewSet):
                 table="goodscategory",
                 must_key_value=item.get('gdcgid')
             ).run()
+
+            # if userid :
+            #     if LimitGoods(userid=userid,limit_goods=item['limit_goods']).run():
+            #         gdnum =
 
             if userid and user.isvip=='1' and item['isvip'] =='0' and obj['status']=='0':
                 rdata['newgoods'].append(dict(
