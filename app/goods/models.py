@@ -100,11 +100,12 @@ class Goods(models.Model):
     limit_citys = models.CharField(max_length=255,verbose_name="限购地区",default="[]", null=True,blank=True)
     limit_citys_number = models.IntegerField(verbose_name="地区限购数量",default=0,null=True,blank=True)
 
-
     isvip = models.CharField(max_length=1,verbose_name="是否仅会员可见,0-是,1-否",default='1')
 
     jf_type = models.CharField(max_length=1,verbose_name="积分方式 0-未设置 1-按比例,2-按固定",default='0')
     jf_value = models.DecimalField(max_digits=18,decimal_places=6,default=0.000,verbose_name="积分值")
+
+    limit_goods = models.TextField(default="[]",verbose_name="可购买触发商品条件")
 
     def save(self, *args, **kwargs):
 
