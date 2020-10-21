@@ -40,7 +40,7 @@ class LimitGoods(object):
             logger.info(query)
             GoodsNumber = len(list(OrderGoodsLink.objects.raw(query)))
 
-            goods_bal.append(GoodsNumber / int(item['num'])-selfGoodsNumber)
+            goods_bal.append(int(GoodsNumber / int(item['num'])-selfGoodsNumber))
 
         logger.info(goods_bal)
         return goods_bal
