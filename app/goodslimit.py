@@ -50,8 +50,12 @@ class LimitGoods(object):
 
     def stockBool(self,gdnum):
 
-        s = min(self.cals_bal())
-        if gdnum <= s:
-            return True
+        r = self.cals_bal()
+
+        if len(r):
+            if gdnum <= min(self.cals_bal()):
+                return True
+            else:
+                return False
         else:
-            return False
+            return True
