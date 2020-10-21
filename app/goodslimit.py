@@ -20,7 +20,7 @@ class LimitGoods(object):
             query = """
                 SELECT t1.linkid FROM `ordergoodslink` as t1
                 INNER JOIN `order` as t2 ON t1.orderid = t2.orderid
-                WHERE t2.status in ('1','2','3') and userid = {} and gdid = {}""".format(self.userid,item['gdid'])
+                WHERE t2.status in ('1','2','3') and t2.userid = {} and t1.gdid = {}""".format(self.userid,item['gdid'])
 
             logger.info(query)
 
