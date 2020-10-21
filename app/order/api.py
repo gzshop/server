@@ -151,7 +151,7 @@ class OrderAPIView(viewsets.ViewSet):
                 glink = GoodsLinkSku.objects.select_for_update().get(id=item.get("linkid"))
                 if glink.stock - int(item.get("number")) < 1:
                     raise PubErrorCustom("商品({})库存不够!".format(goods.gdname))
-                if not LimitGoods(userid=request.user['userid'],limit_goods=json.loads(goods.limit_goods)).stockBool(int(item.get("number"))):
+                if not LimitGoods(userid=request.user['userid'],limit_goods=json.loads(goods.limit_goods),gdid=item.get("gdid")).stockBool(int(item.get("number"))):
                     raise PubErrorCustom("商品({})库存不够!".format(goods.gdname))
 
                 glink.stock -= int(item.get("number"))

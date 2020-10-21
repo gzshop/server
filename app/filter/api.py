@@ -72,7 +72,7 @@ class FilterAPIView(viewsets.ViewSet):
             ).run()
 
             if userid :
-                if LimitGoods(userid=userid,limit_goods=item['limit_goods']).calsBool():
+                if LimitGoods(userid=userid,limit_goods=item['limit_goods'],gdid=item['gdid']).calsBool():
                     gdnum = 0 if request.addressBool else \
                         sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort') ])
                 else:
@@ -139,7 +139,7 @@ class FilterAPIView(viewsets.ViewSet):
             print(goodslinksku)
 
             if userid :
-                if LimitGoods(userid=userid,limit_goods=res['limit_goods']).calsBool():
+                if LimitGoods(userid=userid,limit_goods=res['limit_goods'],gdid=res['gdid']).calsBool():
                     gdnum = 0 if request.addressBool else sum([ i['stock'] for i in goodslinksku])
                 else:
                     gdnum = 0

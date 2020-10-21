@@ -14,6 +14,11 @@ class LimitGoods(object):
 
         logger.info("limit_goods=>{}".format(self.limit_goods))
 
+        goods_bal = []
+
+        if not len(self.limit_goods):
+            return goods_bal
+
         query = """
             SELECT t1.linkid FROM `ordergoodslink` as t1
             INNER JOIN `order` as t2 ON t1.orderid = t2.orderid
