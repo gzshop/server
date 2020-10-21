@@ -145,7 +145,11 @@ class Order(models.Model):
 def viphandler(time,unit,term):
     ut = UtilTime()
     exprise= 0
-    paytime_arrow = ut.timestamp_to_arrow(time)
+    if time <= 0:
+        paytime_arrow = ut.today
+    else:
+        paytime_arrow = ut.timestamp_to_arrow(time)
+
     if unit == '0':
         exprise = paytime_arrow.shift(weeks=term).timestamp
     elif unit == '1':
