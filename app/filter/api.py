@@ -19,7 +19,7 @@ from app.order.utils import calyf
 
 from app.public.serialiers import SysparamsModelSerializer,Sysparams
 
-# from app.utils import LimitGoods
+from app.goodslimit import LimitGoods
 
 
 class FilterAPIView(viewsets.ViewSet):
@@ -71,9 +71,15 @@ class FilterAPIView(viewsets.ViewSet):
                 must_key_value=item.get('gdcgid')
             ).run()
 
-            # if userid :
-            #     if LimitGoods(userid=userid,limit_goods=item['limit_goods']).run():
-            #         gdnum =
+            if userid :
+                if LimitGoods(userid=userid,limit_goods=item['limit_goods']).run():
+                    gdnum = 0 if request.addressBool else \
+                        sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort') ])
+                else:
+                    gdnum = 0
+            else:
+                gdnum = 0 if request.addressBool else \
+                    sum([i.stock for i in GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort')])
 
             if userid and user.isvip=='1' and item['isvip'] =='0' and obj['status']=='0':
                 rdata['newgoods'].append(dict(
@@ -82,9 +88,7 @@ class FilterAPIView(viewsets.ViewSet):
                     gdimg=item['gdimg'],
                     gdtext=item['gdtext'],
                     gdprice=item['gdprice'],
-                    gdnum= \
-                        0 if request.addressBool else \
-                        sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort') ]),
+                    gdnum= gdnum,
                     sort=item['sort']
                 ))
 
@@ -95,9 +99,7 @@ class FilterAPIView(viewsets.ViewSet):
                     gdimg=item['gdimg'],
                     gdtext=item['gdtext'],
                     gdprice=item['gdprice'],
-                    gdnum= \
-                        0 if request.addressBool else \
-                            sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort') ]),
+                    gdnum= gdnum,
                     sort=item['sort']
                 ))
 
@@ -115,6 +117,16 @@ class FilterAPIView(viewsets.ViewSet):
     @Core_connector(isPasswd=True)
     def getGoods(self,request):
 
+        userid = None
+
+        ticket = request.META.get('HTTP_TICKET')
+        if ticket:
+            result = RedisTokenHandler(key=ticket).redis_dict_get()
+            if result:
+                userid = result.get("userid")
+
+        print("用户代码:{}".format(userid))
+
         res = RedisCaCheHandler(
             method="get",
             serialiers="GoodsModelSerializerToRedis",
@@ -125,10 +137,19 @@ class FilterAPIView(viewsets.ViewSet):
             goodslinksku = GoodsLinkSkuSearchSerializer(
                 GoodsLinkSku.objects.filter(id__in=res['gdskulist']).order_by('sort'), many=True).data
             print(goodslinksku)
+
+            if userid :
+                if LimitGoods(userid=userid,limit_goods=res['limit_goods']).run():
+                    gdnum = 0 if request.addressBool else sum([ i['stock'] for i in goodslinksku])
+                else:
+                    gdnum = 0
+            else:
+                gdnum = 0 if request.addressBool else sum([ i['stock'] for i in goodslinksku])
+
             data=dict(
                     gdid = res['gdid'],
                     gdimg = res['gdimg'],
-                    gdnum =  0 if request.addressBool else sum([ i['stock'] for i in goodslinksku]),
+                    gdnum =  gdnum,
                     gdname = res['gdname'],
                     gdprice = res['gdprice'],
                     detail = res['detail'],
@@ -207,7 +228,6 @@ class FilterAPIView(viewsets.ViewSet):
                 item['gdnum'] = 0
 
         return {"data":data}
-
 
     @list_route(methods=['GET'])
     @Core_connector(isPasswd=True)

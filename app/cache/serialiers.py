@@ -140,7 +140,9 @@ class GoodsModelSerializerToRedis(serializers.ModelSerializer):
         return json.loads(obj.limit_citys)
 
     def get_limit_goods(self,obj):
-        return json.loads(obj.limit_goods)
+        r=json.loads(obj.limit_goods)
+        print("ssssssssssssss=>{}".format(r))
+        return r
 
     def get_gdsku(self,obj):
         d=json.loads(obj.gdsku)

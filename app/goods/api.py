@@ -132,7 +132,8 @@ class GoodsAPIView(viewsets.ViewSet):
         obj.gdimg = json.dumps(request.data_format.get("gdimg1",[]))
         obj.limit_citys = json.dumps(request.data_format.get("limit_citys1",[]))
 
-        obj.limit_goods = json.dumps(request.data_format.get("limit_goods",[]))
+        print(request.data_format)
+        obj.limit_goods = request.data_format.get("limit_goods",'[]')
 
         obj.gdsku = json.dumps(request.data_format.get("skuShow"))
         obj.gdskulist = []

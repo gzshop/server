@@ -244,6 +244,9 @@ class OrderAPIView(viewsets.ViewSet):
         if data.get("kdno",None):
             order.kdno = json.dumps(data.get("kdno",[]))
 
+        if data.get("memo",None):
+            order.memo = data.get("memo")
+
         order.save()
 
         return {"data": order.orderid}
