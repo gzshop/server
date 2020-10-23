@@ -20,7 +20,7 @@ class LimitGoods(object):
             return goods_bal
 
         query = """
-            SELECT t1.linkid FROM `ordergoodslink` as t1
+            SELECT t1.linkid,t1.gdnum FROM `ordergoodslink` as t1
             INNER JOIN `order` as t2 ON t1.orderid = t2.orderid
             WHERE t2.status in ('1','2','3') and t2.userid = '{}' and t1.gdid = '{}' group by t1.linkid""".format(self.userid, self.gdid)
 
@@ -37,7 +37,7 @@ class LimitGoods(object):
         for item in self.limit_goods:
 
             query = """
-                SELECT t1.linkid FROM `ordergoodslink` as t1
+                SELECT t1.linkid,t1.gdnum FROM `ordergoodslink` as t1
                 INNER JOIN `order` as t2 ON t1.orderid = t2.orderid
                 WHERE t2.status in ('1','2','3') and t2.userid = '{}' and t1.gdid = '{}' group by t1.linkid""".format(self.userid,item['gdid'])
 
