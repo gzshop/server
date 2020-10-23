@@ -22,25 +22,32 @@ class LimitGoods(object):
         query = """
             SELECT t1.linkid FROM `ordergoodslink` as t1
             INNER JOIN `order` as t2 ON t1.orderid = t2.orderid
-            WHERE t2.status in ('1','2','3') and t2.userid = '{}' and t1.gdid = '{}'""".format(self.userid, self.gdid)
+            WHERE t2.status in ('1','2','3') and t2.userid = '{}' and t1.gdid = '{}' group by t1.linkid""".format(self.userid, self.gdid)
 
         logger.info(query)
 
         goods_bal = []
 
-        selfGoodsNumber = len(list(OrderGoodsLink.objects.raw(query)))
+        obj = list(OrderGoodsLink.objects.raw(query))
+        if len(obj):
+            selfGoodsNumber = obj[0].gdnum
 
         for item in self.limit_goods:
 
             query = """
                 SELECT t1.linkid FROM `ordergoodslink` as t1
                 INNER JOIN `order` as t2 ON t1.orderid = t2.orderid
-                WHERE t2.status in ('1','2','3') and t2.userid = '{}' and t1.gdid = '{}'""".format(self.userid,item['gdid'])
+                WHERE t2.status in ('1','2','3') and t2.userid = '{}' and t1.gdid = '{}' group by t1.linkid""".format(self.userid,item['gdid'])
 
-            logger.info(query)
-            GoodsNumber = len(list(OrderGoodsLink.objects.raw(query)))
+            # logger.info(query)
+            # GoodsNumber = len(list(OrderGoodsLink.objects.raw(query)))
 
-            goods_bal.append(int(GoodsNumber / int(item['num'])-selfGoodsNumber))
+            obj = list(OrderGoodsLink.objects.raw(query))
+            if len(obj):
+                GoodsNumber = obj[0].gdnum
+
+            logger.info("茅台{}|舜{}|条件{}".format(selfGoodsNumber,GoodsNumber,item['num']))
+            goods_bal.append(GoodsNumber / int(item['num'])-selfGoodsNumber)
 
         logger.info(goods_bal)
         return goods_bal
