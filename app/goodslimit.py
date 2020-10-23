@@ -31,6 +31,8 @@ class LimitGoods(object):
         obj = list(OrderGoodsLink.objects.raw(query))
         if len(obj):
             selfGoodsNumber = obj[0].gdnum
+        else:
+            selfGoodsNumber = 0
 
         for item in self.limit_goods:
 
@@ -45,6 +47,8 @@ class LimitGoods(object):
             obj = list(OrderGoodsLink.objects.raw(query))
             if len(obj):
                 GoodsNumber = obj[0].gdnum
+            else:
+                GoodsNumber = 0
 
             logger.info("茅台{}|舜{}|条件{}".format(selfGoodsNumber,GoodsNumber,item['num']))
             goods_bal.append(GoodsNumber / int(item['num'])-selfGoodsNumber)
