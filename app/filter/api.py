@@ -71,15 +71,15 @@ class FilterAPIView(viewsets.ViewSet):
                 must_key_value=item.get('gdcgid')
             ).run()
 
-            if userid :
-                if LimitGoods(userid=userid,limit_goods=item['limit_goods'],gdid=item['gdid']).calsBool():
-                    gdnum = 0 if request.addressBool else \
-                        sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort') ])
-                else:
-                    gdnum = 0
-            else:
-                gdnum = 0 if request.addressBool else \
-                    sum([i.stock for i in GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort')])
+            # if userid :
+            #     if LimitGoods(userid=userid,limit_goods=item['limit_goods'],gdid=item['gdid']).calsBool():
+            #         gdnum = 0 if request.addressBool else \
+            #             sum([ i.stock  for i in  GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort') ])
+            #     else:
+            #         gdnum = 0
+            # else:
+            gdnum = 0 if request.addressBool else \
+                sum([i.stock for i in GoodsLinkSku.objects.filter(id__in=item['gdskulist']).order_by('sort')])
 
             if userid and user.isvip=='1' and item['isvip'] =='0' and obj['status']=='0':
                 rdata['newgoods'].append(dict(
@@ -138,13 +138,13 @@ class FilterAPIView(viewsets.ViewSet):
                 GoodsLinkSku.objects.filter(id__in=res['gdskulist']).order_by('sort'), many=True).data
             print(goodslinksku)
 
-            if userid :
-                if LimitGoods(userid=userid,limit_goods=res['limit_goods'],gdid=res['gdid']).calsBool():
-                    gdnum = 0 if request.addressBool else sum([ i['stock'] for i in goodslinksku])
-                else:
-                    gdnum = 0
-            else:
-                gdnum = 0 if request.addressBool else sum([ i['stock'] for i in goodslinksku])
+            # if userid :
+            #     if LimitGoods(userid=userid,limit_goods=res['limit_goods'],gdid=res['gdid']).calsBool():
+            #         gdnum = 0 if request.addressBool else sum([ i['stock'] for i in goodslinksku])
+            #     else:
+            #         gdnum = 0
+            # else:
+            gdnum = 0 if request.addressBool else sum([ i['stock'] for i in goodslinksku])
 
             data=dict(
                     gdid = res['gdid'],
