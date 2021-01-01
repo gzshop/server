@@ -12,15 +12,14 @@ RUN apk add --no-cache tzdata build-base libffi-dev openssl-dev python-dev py-pi
     echo "Asia/Shanghai" > /etc/timezone
 
 
-RUN pip install -i https://pypi.douban.com/simple --upgrade pip \
-    && pip install -r requirements.txt -i https://pypi.douban.com/simple \
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade pip \
+    && pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple \
     && mkdir -p /project/server/logs \
     && mkdir -p /project/server/media \
     && mkdir -p /var/logs/uwsgi/ \
     && mkdir -p /var/logs/sso \
     && echo "" > /var/logs/uwsgi/run.log \
     && echo "" > /var/logs/sso/cron.log
-
 
 
 CMD uwsgi /project/server/project/wsgi/uwsgi.ini
