@@ -1,4 +1,7 @@
 
+cryptography==2.9.2
+cryptokit==0.0.8
+crypto==1.4.1
 certifi==2018.4.16
 chardet==3.0.4
 coreapi==2.3.3
@@ -16,7 +19,6 @@ demjson
 django_crontab
 geoip2
 pyotp
-cryptokit==0.0.8
 cos-python-sdk-v5
 tencentcloud-sdk-python
 qcloud-python-sts
