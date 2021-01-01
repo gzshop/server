@@ -1,5 +1,5 @@
 
-cryptography==2.9.2
+cryptography==3.2
 cryptokit==0.0.8
 crypto==1.4.1
 certifi==2018.4.16
