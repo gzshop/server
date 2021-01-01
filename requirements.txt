@@ -16,7 +16,7 @@ demjson
 django_crontab
 geoip2
 pyotp
-cryptokit
+cryptokit==0.0.8
 cos-python-sdk-v5
 tencentcloud-sdk-python
 qcloud-python-sts
