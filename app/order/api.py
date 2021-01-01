@@ -152,7 +152,7 @@ class OrderAPIView(viewsets.ViewSet):
                 if glink.stock - int(item.get("number")) < 1:
                     raise PubErrorCustom("商品({})库存不够!".format(goods.gdname))
                 if not LimitGoods(userid=request.user['userid'],limit_goods=json.loads(goods.limit_goods),gdid=item.get("gdid")).stockBool(int(item.get("number"))):
-                    raise PubErrorCustom("商品({})库存不够!".format(goods.gdname))
+                    raise PubErrorCustom("购买2瓶舜将后即可以1499元购买一瓶53度飞天茅台")
 
                 glink.stock -= int(item.get("number"))
                 glink.number += int(item.get("number"))
