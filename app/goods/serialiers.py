@@ -71,6 +71,10 @@ class MakesModelSerializer(serializers.ModelSerializer):
 
     user = serializers.SerializerMethodField()
     order = serializers.SerializerMethodField()
+    goods = serializers.SerializerMethodField()
+
+    def get_goods(self,obj):
+        return GoodsModelSerializer222(Goods.objects.get(gdid=obj.gdid),many=False).data
 
     def get_user(self,obj):
         return UserSe(Users.objects.get(userid=obj.userid),many=False).data
