@@ -89,14 +89,14 @@ class GoodsAPIView(viewsets.ViewSet):
 
         query = Makes.objects.filter()
 
-        if active_id:
-            query = query.filter(active_id=active_id)
-
-        if status:
-            query = query.filter(status=status)
-
-        if isapp:
-            query = query.filter(userid = request.user['userid'])
+        # if active_id:
+        #     query = query.filter(active_id=active_id)
+        #
+        # if status:
+        #     query = query.filter(status=status)
+        #
+        # if isapp:
+        #     query = query.filter(userid = request.user['userid'])
 
         return {"data":MakesModelSerializer(query.order_by('-createtime'),many=True).data}
 
