@@ -10,7 +10,7 @@ from lib.utils.db import RedisUserSysSetting
 from app.cache.utils import RedisCaCheHandler
 from app.user.models import Users
 from app.order.models import Address
-from app.goods.models import Goods,GoodsLinkSku
+from app.goods.models import Goods,GoodsLinkSku,Active,Makes
 from app.goods.serialiers import GoodsForSearchSerializer,GoodsLinkSkuSearchSerializer
 from app.order.serialiers import AddressModelSerializer
 

@@ -119,6 +119,9 @@ class OrderAPIView(viewsets.ViewSet):
 
         data=request.data_format
 
+
+        active_id = data.get("active_id",None)
+
         if not len(data['data']['goods']):
             raise PubErrorCustom("购买商品不能为空!")
 
