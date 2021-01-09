@@ -84,11 +84,14 @@ class GoodsAPIView(viewsets.ViewSet):
         """
 
         isapp = request.query_params_format.get('isapp', None)
+        status = request.query_params_format.get('status',None)
 
         query = Makes.objects.filter(
-            status=request.query_params_format.get('status'),
             active_id = request.query_params_format.get('active_id'),
         )
+
+        if status:
+            query = query.filter(status=status)
 
         if isapp:
             query = query.filter(userid = request.user['userid'])
