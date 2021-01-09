@@ -120,6 +120,9 @@ class GoodsAPIView(viewsets.ViewSet):
             if acObj.status != '0':
                 raise PubErrorCustom("此活动已关闭!")
 
+            if acObj.start_time > UtilTime().timestamp:
+                raise PubErrorCustom("此活动预约时间未开始!")
+
             if acObj.end_time <= UtilTime().timestamp:
                 raise PubErrorCustom("此活动预约时间已结束!")
 
