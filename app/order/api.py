@@ -156,7 +156,7 @@ class OrderAPIView(viewsets.ViewSet):
             try:
                 makes = Makes.objects.get(
                     active_id=active.id,
-                    userid=request.user.userid
+                    userid=request.user['userid']
                 )
 
                 if len(makes.orderid):
