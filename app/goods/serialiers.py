@@ -36,6 +36,25 @@ class ActiveModelSerializer(serializers.ModelSerializer):
         model = Active
         fields = '__all__'
 
+class ActiveModelSerializer1(serializers.ModelSerializer):
+
+    goods = serializers.SerializerMethodField()
+
+    makes = serializers.SerializerMethodField()
+
+    def get_makes(self,obj):
+        if obj.makes:
+            return MakesModelSerializer(obj.makes,many=False).data
+        else:
+            return None
+
+    def get_goods(self,obj):
+        return GoodsModelSerializer222(Goods.objects.get(gdid=obj.gdid),many=False).data
+
+    class Meta:
+        model = Active
+        fields = '__all__'
+
 class UserSe(serializers.Serializer):
     userid = serializers.IntegerField()
     name = serializers.CharField()

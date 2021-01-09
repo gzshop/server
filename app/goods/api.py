@@ -107,10 +107,10 @@ class GoodsAPIView(viewsets.ViewSet):
         try:
             Makes.objects.get(
                 active_id=request.data_format.get('active_id'),
-                userid__in= request.data_format.get('userids')
+                userid= request.user.userid
             )
             raise PubErrorCustom("已预约!")
-        except Makes.Makes:
+        except Makes.DoesNotExist:
 
             try:
                 acObj = Active.objects.get(id=id)
@@ -142,7 +142,7 @@ class GoodsAPIView(viewsets.ViewSet):
         try:
             obj = Makes.objects.for_update().get(
                 active_id=request.data_format.get('active_id'),
-                userid__in=request.data_format.get('userids')
+                userid= request.user.userid
             )
 
             try:
@@ -162,7 +162,7 @@ class GoodsAPIView(viewsets.ViewSet):
             if obj.status != '1':
                 raise PubErrorCustom("只有预约成功才能进行抢购!")
 
-        except Makes.Makes:
+        except Makes.DoesNotExist:
             raise PubErrorCustom("未预约!")
 
     @list_route(methods=['POST'])

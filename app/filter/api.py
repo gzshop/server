@@ -14,6 +14,8 @@ from app.goods.models import Goods,GoodsLinkSku
 from app.goods.serialiers import GoodsForSearchSerializer,GoodsLinkSkuSearchSerializer
 from app.order.serialiers import AddressModelSerializer
 
+from app.goods.serialiers import ActiveModelSerializer1
+
 from lib.utils.db import RedisTokenHandler
 from app.order.utils import calyf
 
@@ -136,7 +138,7 @@ class FilterAPIView(viewsets.ViewSet):
         if res['gdstatus'] == '0':
             goodslinksku = GoodsLinkSkuSearchSerializer(
                 GoodsLinkSku.objects.filter(id__in=res['gdskulist']).order_by('sort'), many=True).data
-            print(goodslinksku)
+
 
             # if userid :
             #     if LimitGoods(userid=userid,limit_goods=res['limit_goods'],gdid=res['gdid']).calsBool():
@@ -158,6 +160,28 @@ class FilterAPIView(viewsets.ViewSet):
                 )
 
             data['yf'] = calyf(res['yf'])
+
+            active_id = request.query_params_format.get('active_id', None)
+
+            if active_id:
+                try:
+                    active = Active.objects.get(id=active_id)
+                except Active.DoesNotExist:
+                    active = None
+
+                try:
+                    active.makes = Makes.objects.get(
+                        active_id=active.id,
+                        userid=userid
+                    )
+                except Makes.DoesNotExist:
+                    active.makes = None
+
+                if active:
+                    data['active'] = ActiveModelSerializer1(active, many=False).data
+
+            else:
+                data['active'] = None
 
             return {"data":data}
         else:
