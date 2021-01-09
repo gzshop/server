@@ -1,11 +1,52 @@
 
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-from app.goods.models import GoodsCateGory,Goods,GoodsTheme,Card,Cardvirtual,DeliveryCode,SkuValue,SkuKey,GoodsLinkSku
+from app.goods.models import GoodsCateGory,Goods,GoodsTheme,Card,Cardvirtual,DeliveryCode,SkuValue,SkuKey,GoodsLinkSku,Makes,Active
+from app.user.models import Users
+from app.order.models import Order
 from lib.utils.mytime import UtilTime
 import json
 
+class ActiveModelSerializer(serializers.ModelSerializer):
 
+    goods = serializers.SerializerMethodField()
+
+    def get_goods(self,obj):
+        return GoodsModelSerializer(Goods.objects.get(gdid=obj.gdid),many=False).data
+
+    class Meta:
+        model = Active
+        fields = '__all__'
+
+class UserSe(serializers.Serializer):
+    userid = serializers.IntegerField()
+    name = serializers.CharField()
+    pic = serializers.CharField()
+
+class OrderModelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Order
+        fields = '__all__'
+
+class MakesModelSerializer(serializers.ModelSerializer):
+
+
+    user = serializers.SerializerMethodField()
+    order = serializers.SerializerMethodField()
+
+    def get_user(self,obj):
+        return UserSe(Users.objects.get(userid=obj.userid),many=False).data
+
+    def get_order(self,obj):
+        if len(obj.orderid):
+            return OrderModelSerializer(Order.objects.get(orderid=obj.orderid),many=False).data
+        else:
+            return None
+
+    class Meta:
+        model = Makes
+        fields = '__all__'
 
 class GoodsLinkSkuSearchSerializer(serializers.Serializer):
     id=serializers.IntegerField()

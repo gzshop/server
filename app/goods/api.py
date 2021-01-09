@@ -11,10 +11,10 @@ from app.user.models import Role
 
 from app.cache.utils import RedisCaCheHandler
 from lib.utils.db import RedisCaCheHandlerBase
-from app.goods.models import GoodsCateGory,Goods,GoodsTheme,Card,Cardvirtual,DeliveryCode,SkuKey,SkuValue,GoodsLinkSku
+from app.goods.models import GoodsCateGory,Goods,GoodsTheme,Card,Cardvirtual,DeliveryCode,SkuKey,SkuValue,GoodsLinkSku,Makes,Active
 from app.goods.serialiers import GoodsCateGoryModelSerializer,GoodsModelSerializer,\
     GoodsThemeModelSerializer,CardModelSerializer,CardvirtualModelSerializer,DeliveryCodeModelSerializer,\
-        SkuValueModelSerializer,SkuKeyGoryModelSerializer,GoodsLinkSkuSearchSerializer
+        SkuValueModelSerializer,SkuKeyGoryModelSerializer,GoodsLinkSkuSearchSerializer,MakesModelSerializer,ActiveModelSerializer
 
 class GoodsAPIView(viewsets.ViewSet):
 
@@ -40,6 +40,60 @@ class GoodsAPIView(viewsets.ViewSet):
         ).run()
 
         return None
+
+    @list_route(methods=['POST'])
+    @Core_connector(isTransaction=True,
+                    isPasswd=True,
+                    isTicket=True,
+                    serializer_class=ActiveModelSerializer,
+                    model_class=Active)
+    def saveActive(self,request,*args,**kwargs):
+
+        serializer = kwargs.pop("serializer")
+        serializer.save()
+        return None
+
+    @list_route(methods=['GET'])
+    @Core_connector(isPasswd=True,isTicket=True,isPagination=True)
+    def getActive(self,request,*args, **kwargs):
+
+        id = request.query_params_format.get('id',None)
+
+        if id :
+            try:
+                return {"data": ActiveModelSerializer( Active.objects.get(id=id), many=False).data}
+            except Active.DoesNotExist:
+                raise PubErrorCustom("此活动不存在!")
+        else:
+            return {"data":ActiveModelSerializer(Active.objects.filter(),many=True).data}
+
+    @list_route(methods=['GET'])
+    @Core_connector(isPasswd=True,isTicket=True,isPagination=True)
+    def getMakes(self,request,*args, **kwargs):
+
+        """
+        预约抢购列表
+        """
+
+        query = Makes.objects.filter(
+            status=request.query_params_format.get('status'),
+            active_id = request.query_params_format.get('active_id'),
+        )
+        return {"data":MakesModelSerializer(query,many=True).data}
+
+    @list_route(methods=['POST'])
+    @Core_connector(isPasswd=True,isTicket=True,isTransaction=True)
+    def makeIsOk(self,request,*args, **kwargs):
+
+        """
+        是否抢购成功
+        """
+
+        Makes.objects.filter(
+            active_id=request.data_format.get('active_id'),
+            userid__in= request.data_format.get('userids'),
+            status='3'
+        ).update(status='4')
 
 
     @list_route(methods=['GET'])
