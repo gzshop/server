@@ -18,7 +18,7 @@ from app.user.serialiers import UsersSerializers
 from app.order.serialiers import OrderModelSerializer,AddressModelSerializer,OrderGoodsLinkModelSerializer
 from app.order.models import Address
 from lib.utils.log import logger
-from app.goods.models import Card,Cardvirtual,DeliveryCode,Goods,GoodsLinkSku
+from app.goods.models import Card,Cardvirtual,DeliveryCode,Goods,GoodsLinkSku,Active,Makes
 
 from app.order.utils import wechatPay,updBalList,AlipayBase,fastMail,calyf,queryBuyOkGoodsCount,cityLimit,OrderBase,request_task_order
 from lib.utils.db import RedisTokenHandler
@@ -147,6 +147,23 @@ class OrderAPIView(viewsets.ViewSet):
         if active_id:
             if  data['data']['goods'][0]['number'] != 1:
                 raise PubErrorCustom("预约抢购数量只能是1")
+
+            try:
+                active = Active.objects.get(id=active_id)
+            except Active.DoesNotExist:
+                raise PubErrorCustom("此活动不存在!")
+
+            try:
+                makes = Makes.objects.get(
+                    active_id=active.id,
+                    userid=request.user.userid
+                )
+
+                if makes.status!='4':
+                    raise PubErrorCustom("抢购未成功,不能下单!")
+
+            except Makes.DoesNotExist:
+                raise PubErrorCustom("未预约!")
 
         for item in data['data']['goods']:
             try:
