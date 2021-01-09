@@ -87,7 +87,7 @@ class GoodsAPIView(viewsets.ViewSet):
         status = request.query_params_format.get('status',None)
 
         query = Makes.objects.filter(
-            active_id = request.query_params_format.get('active_id'),
+            active_id = request.query_params_format.get('active_id')
         )
 
         if status:
