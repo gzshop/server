@@ -91,6 +91,8 @@ class Makes(models.Model):
 
     gdid = models.CharField(max_length=10, verbose_name="商品ID", null=True)
 
+    is_ok = models.CharField(max_length=1, verbose_name="状态,0-抢购成功", default="1")
+
     active_id = models.BigIntegerField(verbose_name="活动ID", null=True)
 
     createtime = models.BigIntegerField(default=0)

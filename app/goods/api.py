@@ -184,8 +184,8 @@ class GoodsAPIView(viewsets.ViewSet):
         Makes.objects.filter(
             active_id=request.data_format.get('active_id'),
             userid__in= request.data_format.get('userids'),
-            status='3'
-        ).update(status='4')
+            status='1'
+        ).update(is_ok='0')
 
 
     @list_route(methods=['GET'])

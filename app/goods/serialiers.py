@@ -55,6 +55,7 @@ class ActiveModelSerializer1(serializers.ModelSerializer):
         model = Active
         fields = '__all__'
 
+
 class UserSe(serializers.Serializer):
     userid = serializers.IntegerField()
     name = serializers.CharField()
@@ -72,6 +73,10 @@ class MakesModelSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     order = serializers.SerializerMethodField()
     goods = serializers.SerializerMethodField()
+    active = serializers.SerializerMethodField()
+
+    def get_active(self,obj):
+        return ActiveModelSerializer(Active.objects.get(id=obj.active_id),many=False).data
 
     def get_goods(self,obj):
         return GoodsModelSerializer222(Goods.objects.get(gdid=obj.gdid),many=False).data
