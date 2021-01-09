@@ -125,7 +125,7 @@ class GoodsAPIView(viewsets.ViewSet):
 
             Makes.objects.create(**{
                 "active_id":request.data_format.get('active_id'),
-                "userid":request.data_format.get('userids'),
+                "userid":request.user.userid,
                 "orderid":"",
                 "status":'1',
                 "gdid":acObj.gdid
