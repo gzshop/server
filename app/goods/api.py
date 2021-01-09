@@ -113,7 +113,7 @@ class GoodsAPIView(viewsets.ViewSet):
         except Makes.DoesNotExist:
 
             try:
-                acObj = Active.objects.get(id=id)
+                acObj = Active.objects.get(id=request.data_format.get('active_id'))
             except Active.DoesNotExist:
                 raise PubErrorCustom("此活动不存在!")
 
@@ -146,7 +146,7 @@ class GoodsAPIView(viewsets.ViewSet):
             )
 
             try:
-                acObj = Active.objects.get(id=id)
+                acObj = Active.objects.get(id=request.data_format.get('active_id'))
             except Active.DoesNotExist:
                 raise PubErrorCustom("此活动不存在!")
 
