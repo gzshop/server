@@ -144,6 +144,10 @@ class OrderAPIView(viewsets.ViewSet):
 
         orderHandler =  OrderBase(order=orderObj)
 
+        if active_id:
+            if  data['data']['goods'][0]['number'] != 1:
+                raise PubErrorCustom("预约抢购数量只能是1")
+
         for item in data['data']['goods']:
             try:
                 goods = Goods.objects.get(gdid=item.get("gdid"), gdstatus='0')
@@ -154,8 +158,8 @@ class OrderAPIView(viewsets.ViewSet):
                 glink = GoodsLinkSku.objects.select_for_update().get(id=item.get("linkid"))
                 if glink.stock - int(item.get("number")) < 1:
                     raise PubErrorCustom("商品({})库存不够!".format(goods.gdname))
-                if not LimitGoods(userid=request.user['userid'],limit_goods=json.loads(goods.limit_goods),gdid=item.get("gdid")).stockBool(int(item.get("number"))):
-                    raise PubErrorCustom("购买2瓶舜将后即可以1499元购买一瓶53度飞天茅台")
+                # if not LimitGoods(userid=request.user['userid'],limit_goods=json.loads(goods.limit_goods),gdid=item.get("gdid")).stockBool(int(item.get("number"))):
+                #     raise PubErrorCustom("购买2瓶舜将后即可以1499元购买一瓶53度飞天茅台")
 
                 glink.stock -= int(item.get("number"))
                 glink.number += int(item.get("number"))
