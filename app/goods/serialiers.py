@@ -7,12 +7,30 @@ from app.order.models import Order
 from lib.utils.mytime import UtilTime
 import json
 
+
+class GoodsModelSerializer222(serializers.ModelSerializer):
+
+
+    gdimg = serializers.SerializerMethodField()
+
+    def get_gdimg(self,obj):
+
+        imgs = json.loads(obj.gdimg)
+        if len(imgs):
+            return imgs[0]
+        else:
+            return None
+
+    class Meta:
+        model = Goods
+        fields = '__all__'
+
 class ActiveModelSerializer(serializers.ModelSerializer):
 
     goods = serializers.SerializerMethodField()
 
     def get_goods(self,obj):
-        return GoodsModelSerializer(Goods.objects.get(gdid=obj.gdid),many=False).data
+        return GoodsModelSerializer222(Goods.objects.get(gdid=obj.gdid),many=False).data
 
     class Meta:
         model = Active

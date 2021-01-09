@@ -6,6 +6,7 @@ from rest_framework.decorators import list_route
 from lib.core.decorator.response import Core_connector
 from app.user.models import Users
 from lib.utils.exceptions import PubErrorCustom
+from lib.utils.mytime import UtilTime
 
 from app.user.models import Role
 
@@ -58,6 +59,8 @@ class GoodsAPIView(viewsets.ViewSet):
     def getActive(self,request,*args, **kwargs):
 
         id = request.query_params_format.get('id',None)
+        status = request.query_params_format.get('status',None)
+        isapp = request.query_params_format.get('isapp',None)
 
         if id :
             try:
@@ -65,7 +68,12 @@ class GoodsAPIView(viewsets.ViewSet):
             except Active.DoesNotExist:
                 raise PubErrorCustom("此活动不存在!")
         else:
-            return {"data":ActiveModelSerializer(Active.objects.filter(),many=True).data}
+            query = Active.objects.filter()
+            if status:
+                query = query.filter(status=status)
+            if isapp:
+                query = query.filter(end_time1__gt=UtilTime().timestamp)
+            return {"data":ActiveModelSerializer(query.order_by('-createtime'),many=True).data}
 
     @list_route(methods=['GET'])
     @Core_connector(isPasswd=True,isTicket=True,isPagination=True)
@@ -75,11 +83,17 @@ class GoodsAPIView(viewsets.ViewSet):
         预约抢购列表
         """
 
+        isapp = request.query_params_format.get('isapp', None)
+
         query = Makes.objects.filter(
             status=request.query_params_format.get('status'),
             active_id = request.query_params_format.get('active_id'),
         )
-        return {"data":MakesModelSerializer(query,many=True).data}
+
+        if isapp:
+            query = query.filter(userid = request.user.userid)
+
+        return {"data":MakesModelSerializer(query.order_by('-createtime'),many=True).data}
 
     @list_route(methods=['POST'])
     @Core_connector(isPasswd=True,isTicket=True,isTransaction=True)
