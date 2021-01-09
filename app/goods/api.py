@@ -91,7 +91,7 @@ class GoodsAPIView(viewsets.ViewSet):
         )
 
         if isapp:
-            query = query.filter(userid = request.user.userid)
+            query = query.filter(userid = request.user['userid'])
 
         return {"data":MakesModelSerializer(query.order_by('-createtime'),many=True).data}
 
