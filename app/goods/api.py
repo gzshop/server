@@ -72,7 +72,7 @@ class GoodsAPIView(viewsets.ViewSet):
             if status:
                 query = query.filter(status=status)
             if isapp:
-                query = query.filter(end_time1__gt=UtilTime().timestamp)
+                query = query.filter(end_time__gt=UtilTime().timestamp)
             return {"data":ActiveModelSerializer(query.order_by('-createtime'),many=True).data}
 
     @list_route(methods=['GET'])
@@ -94,6 +94,76 @@ class GoodsAPIView(viewsets.ViewSet):
             query = query.filter(userid = request.user.userid)
 
         return {"data":MakesModelSerializer(query.order_by('-createtime'),many=True).data}
+
+
+    @list_route(methods=['POST'])
+    @Core_connector(isPasswd=True,isTicket=True,isTransaction=True)
+    def makeYyIsOk(self,request,*args, **kwargs):
+
+        """
+        预约
+        """
+
+        try:
+            Makes.objects.get(
+                active_id=request.data_format.get('active_id'),
+                userid__in= request.data_format.get('userids')
+            )
+            raise PubErrorCustom("已预约!")
+        except Makes.Makes:
+
+            try:
+                acObj = Active.objects.get(id=id)
+            except Active.DoesNotExist:
+                raise PubErrorCustom("此活动不存在!")
+
+            if acObj.status != '0':
+                raise PubErrorCustom("此活动已关闭!")
+
+            if acObj.end_time <= UtilTime().timestamp:
+                raise PubErrorCustom("此活动预约时间已结束!")
+
+            Makes.objects.create(**{
+                "active_id":request.data_format.get('active_id'),
+                "userid":request.data_format.get('userids'),
+                "orderid":"",
+                "status":'1',
+                "gdid":acObj.gdid
+            })
+
+    @list_route(methods=['POST'])
+    @Core_connector(isPasswd=True, isTicket=True, isTransaction=True)
+    def makeQgIsOk(self, request, *args, **kwargs):
+
+        """
+        抢购
+        """
+
+        try:
+            obj = Makes.objects.for_update().get(
+                active_id=request.data_format.get('active_id'),
+                userid__in=request.data_format.get('userids')
+            )
+
+            try:
+                acObj = Active.objects.get(id=id)
+            except Active.DoesNotExist:
+                raise PubErrorCustom("此活动不存在!")
+
+            if acObj.status != '0':
+                raise PubErrorCustom("此活动已关闭!")
+
+            if acObj.start_time1 > UtilTime().timestamp:
+                raise PubErrorCustom("此活动抢购时间未开始!")
+
+            if acObj.end_time1 <= UtilTime().timestamp:
+                raise PubErrorCustom("此活动抢购时间已结束!")
+
+            if obj.status != '1':
+                raise PubErrorCustom("只有预约成功才能进行抢购!")
+
+        except Makes.Makes:
+            raise PubErrorCustom("未预约!")
 
     @list_route(methods=['POST'])
     @Core_connector(isPasswd=True,isTicket=True,isTransaction=True)

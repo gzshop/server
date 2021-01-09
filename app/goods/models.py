@@ -87,7 +87,9 @@ class Makes(models.Model):
     userid = models.BigIntegerField(verbose_name="用户代码", null=True)
     orderid = models.CharField(max_length=19, verbose_name="订单ID", null=True)
 
-    status = models.CharField(max_length=1, verbose_name="状态,0-预约,1-预约成功,2-预约失败,3-抢购4-抢购成功,5-抢购失败", default="1")
+    status = models.CharField(max_length=1, verbose_name="状态,0-预约,1-预约成功,2-预约失败,3-抢购4-抢购成功,5-抢购失败", default="0")
+
+    gdid = models.CharField(max_length=10, verbose_name="商品ID", null=True)
 
     active_id = models.BigIntegerField(verbose_name="活动ID", null=True)
 
