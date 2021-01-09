@@ -85,10 +85,12 @@ class GoodsAPIView(viewsets.ViewSet):
 
         isapp = request.query_params_format.get('isapp', None)
         status = request.query_params_format.get('status',None)
+        active_id = request.query_params_format.get('active_id',None)
 
-        query = Makes.objects.filter(
-            active_id = request.query_params_format.get('active_id')
-        )
+        query = Makes.objects.filter()
+
+        if active_id:
+            query = query.filter(active_id=active_id)
 
         if status:
             query = query.filter(status=status)
