@@ -98,7 +98,7 @@ class LimitGoods1(object):
             SELECT t1.linkid,t1.gdnum FROM `ordergoodslink` as t1
             INNER JOIN `order` as t2 ON t1.orderid = t2.orderid
             WHERE t2.status in ('1','2','3') 
-            and t2.userid = '{}' and t1.gdid = '{}' and createtime > 1610186400 group by t1.linkid""".format(
+            and t2.userid = '{}' and t1.gdid = '{}' and t2.createtime > 1610186400 group by t1.linkid""".format(
             self.userid, "G000022")
 
         # logger.info(query)
@@ -106,7 +106,7 @@ class LimitGoods1(object):
 
         obj = list(OrderGoodsLink.objects.raw(query))
         if len(obj):
-            GoodsNumber = obj[0].gdnum
+            GoodsNumber = [ sum(item.gdnum) for item in obj]
         else:
             GoodsNumber = 0
 
