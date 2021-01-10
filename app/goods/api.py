@@ -89,14 +89,19 @@ class GoodsAPIView(viewsets.ViewSet):
 
         query = Makes.objects.filter()
 
-        # if active_id:
-        #     query = query.filter(active_id=active_id)
-        #
-        # if status:
-        #     query = query.filter(status=status)
-        #
-        # if isapp:
-        #     query = query.filter(userid = request.user['userid'])
+
+
+        if isapp:
+            query = query.filter(userid = request.user['userid'])
+
+            print("我的预约用户ID{}".format(request.user['userid']))
+        else:
+            if active_id:
+                query = query.filter(active_id=active_id)
+
+            if status:
+                query = query.filter(status=status)
+
 
         return {"data":MakesModelSerializer(query.order_by('-createtime'),many=True).data}
 
