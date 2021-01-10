@@ -163,9 +163,10 @@ class OrderAPIView(viewsets.ViewSet):
                 if len(makes.orderid):
                     raise PubErrorCustom("此次活动已购买商品,不能重复购买!")
 
-                if makes.status!='4':
-                    raise PubErrorCustom("抢购未成功,不能下单!")
+                if makes.status!='3' and makes.is_ok != '0' :
+                    raise PubErrorCustom("抢购不成功,期待下次好运!")
 
+                makes.status ='4'
                 makes.orderid = orderObj.orderid
                 makes.save()
 

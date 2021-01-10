@@ -153,7 +153,7 @@ class GoodsAPIView(viewsets.ViewSet):
         """
 
         try:
-            obj = Makes.objects.for_update().get(
+            obj = Makes.objects.get(
                 active_id=request.data_format.get('active_id'),
                 userid= request.user['userid']
             )
@@ -174,6 +174,9 @@ class GoodsAPIView(viewsets.ViewSet):
 
             if obj.status != '1':
                 raise PubErrorCustom("只有预约成功才能进行抢购!")
+
+            obj.status = '3'
+            obj.save()
 
         except Makes.DoesNotExist:
             raise PubErrorCustom("未预约!")
