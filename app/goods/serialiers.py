@@ -79,7 +79,7 @@ class MakesModelSerializer(serializers.ModelSerializer):
     bal = serializers.SerializerMethodField()
 
     def get_bal(self,obj):
-        return LimitGoods1(userid=request.user['userid']).cals_bal()
+        return LimitGoods1(userid=obj.userid).cals_bal()
 
     def get_active(self,obj):
         return ActiveModelSerializer(Active.objects.get(id=obj.active_id),many=False).data
