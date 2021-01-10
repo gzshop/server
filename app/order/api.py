@@ -383,6 +383,8 @@ class OrderAPIView(viewsets.ViewSet):
         orderid = request.data_format.get("orderid", None)
         refundmsg = request.data_format.get("refundmsg", None)
 
+        raise PubErrorCustom("目前不支持退款!")
+
         if not refundmsg:
             raise PubErrorCustom("理由不能为空!")
 
