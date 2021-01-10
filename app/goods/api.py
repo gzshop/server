@@ -145,10 +145,6 @@ class GoodsAPIView(viewsets.ViewSet):
         预约
         """
 
-        bal = LimitGoods1(userid=request.user['userid']).cals_bal()
-        if bal<=0:
-            raise PubErrorCustom("请先购买舜，再预约!")
-
         try:
             Makes.objects.get(
                 active_id=request.data_format.get('active_id'),
@@ -170,6 +166,10 @@ class GoodsAPIView(viewsets.ViewSet):
 
             if acObj.end_time / 1000 <= UtilTime().timestamp:
                 raise PubErrorCustom("此活动预约时间已结束!")
+
+            bal = LimitGoods1(userid=request.user['userid']).cals_bal()
+            if bal <= 0:
+                raise PubErrorCustom("请先购买舜，再预约!")
 
             Makes.objects.create(**{
                 "active_id":request.data_format.get('active_id'),
