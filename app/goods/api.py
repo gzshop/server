@@ -7,7 +7,7 @@ from lib.core.decorator.response import Core_connector
 from app.user.models import Users
 from lib.utils.exceptions import PubErrorCustom
 from lib.utils.mytime import UtilTime
-
+from app.goodslimit import LimitGoods1
 from app.user.models import Role
 
 from app.cache.utils import RedisCaCheHandler
@@ -113,6 +113,10 @@ class GoodsAPIView(viewsets.ViewSet):
         """
         预约
         """
+
+        bal = LimitGoods1.cals_bal(userid=request.user['userid'])
+        if bal<=0:
+            raise PubErrorCustom("请先购买舜，再预约!")
 
         try:
             Makes.objects.get(

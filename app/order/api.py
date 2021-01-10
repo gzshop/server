@@ -161,9 +161,14 @@ class OrderAPIView(viewsets.ViewSet):
                 )
 
                 if len(makes.orderid):
+                    # try:
+                    #     oinstance = Order.objects.get(orderid=makes.orderid)
+                    # except Order.DoesNotExist:
+                    #     raise PubErrorCustom("此活动不存在!")
+
                     raise PubErrorCustom("此次活动已购买商品,不能重复购买!")
 
-                if makes.status!='3' and makes.is_ok != '0' :
+                if makes.status!='3' or makes.is_ok != '0' :
                     raise PubErrorCustom("抢购不成功,期待下次好运!")
 
                 makes.status ='4'
