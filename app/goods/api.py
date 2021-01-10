@@ -130,10 +130,10 @@ class GoodsAPIView(viewsets.ViewSet):
             if acObj.status != '0':
                 raise PubErrorCustom("此活动已关闭!")
 
-            if acObj.start_time > UtilTime().timestamp:
+            if acObj.start_time / 1000 > UtilTime().timestamp:
                 raise PubErrorCustom("此活动预约时间未开始!")
 
-            if acObj.end_time <= UtilTime().timestamp:
+            if acObj.end_time / 1000 <= UtilTime().timestamp:
                 raise PubErrorCustom("此活动预约时间已结束!")
 
             Makes.objects.create(**{
@@ -166,10 +166,10 @@ class GoodsAPIView(viewsets.ViewSet):
             if acObj.status != '0':
                 raise PubErrorCustom("此活动已关闭!")
 
-            if acObj.start_time1 > UtilTime().timestamp:
+            if acObj.start_time1 / 1000 > UtilTime().timestamp:
                 raise PubErrorCustom("此活动抢购时间未开始!")
 
-            if acObj.end_time1 <= UtilTime().timestamp:
+            if acObj.end_time1 / 1000 <= UtilTime().timestamp:
                 raise PubErrorCustom("此活动抢购时间已结束!")
 
             if obj.status != '1':

@@ -67,6 +67,7 @@ class Active(models.Model):
     updtime = models.BigIntegerField(default=0)
 
     def save(self, *args, **kwargs):
+
         if not self.createtime:
             self.createtime = UtilTime().timestamp
         self.updtime = UtilTime().timestamp
