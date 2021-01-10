@@ -13,6 +13,7 @@ class GoodsModelSerializer222(serializers.ModelSerializer):
 
 
     gdimg = serializers.SerializerMethodField()
+    gdprice = serializers.DecimalField(max_digits=16,decimal_places=2)
 
     def get_gdimg(self,obj):
 
