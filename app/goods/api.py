@@ -76,7 +76,7 @@ class GoodsAPIView(viewsets.ViewSet):
             return {"data":ActiveModelSerializer(query.order_by('-createtime'),many=True).data}
 
     @list_route(methods=['GET'])
-    @Core_connector(isPasswd=True,isTicket=True,isPagination=True)
+    @Core_connector(isPasswd=True,isTicket=True)
     def getMakes(self,request,*args, **kwargs):
 
         """
@@ -93,6 +93,8 @@ class GoodsAPIView(viewsets.ViewSet):
             query = query.filter(userid = request.user['userid'])
 
             print("我的预约用户ID{}".format(request.user['userid']))
+
+            query = query.order_by('-createtime')
         else:
             if active_id:
                 query = query.filter(active_id=active_id)
@@ -100,8 +102,15 @@ class GoodsAPIView(viewsets.ViewSet):
             if status:
                 query = query.filter(status=status)
 
+            page = int(request.query_params_format.get("page", 1))
 
-        return {"data":MakesModelSerializer(query.order_by('-createtime'),many=True).data}
+            page_size = request.query_params_format.get("page_size", 10)
+            page_start = page_size * page - page_size
+            page_end = page_size * page
+
+            query = query.order_by('-createtime')[page_start:page_end]
+
+        return {"data":MakesModelSerializer(query,many=True).data}
 
 
     @list_route(methods=['POST'])
