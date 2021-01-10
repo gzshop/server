@@ -76,7 +76,7 @@ class GoodsAPIView(viewsets.ViewSet):
             return {"data":ActiveModelSerializer(query.order_by('-createtime'),many=True).data}
 
     @list_route(methods=['GET'])
-    @Core_connector(isPasswd=True,isTicket=True)
+    @Core_connector(isPasswd=True,isTicket=True,isPagination=True)
     def getMakes(self,request,*args, **kwargs):
 
         """
