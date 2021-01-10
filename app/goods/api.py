@@ -95,6 +95,9 @@ class GoodsAPIView(viewsets.ViewSet):
             print("我的预约用户ID{}".format(request.user['userid']))
 
             query = query.order_by('-createtime')
+
+            return {"data": MakesModelSerializer(query, many=True).data}
+
         else:
             if active_id:
                 query = query.filter(active_id=active_id)
@@ -110,7 +113,11 @@ class GoodsAPIView(viewsets.ViewSet):
 
             query = query.order_by('-createtime')[page_start:page_end]
 
-        return {"data":MakesModelSerializer(query,many=True).data}
+            headers = {
+                'Total': len(query)
+            }
+
+            return {"data":MakesModelSerializer(query,many=True).data,"header":headers}
 
 
     @list_route(methods=['POST'])
