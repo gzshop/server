@@ -86,10 +86,11 @@ class GoodsAPIView(viewsets.ViewSet):
         isapp = request.query_params_format.get('isapp', None)
         status = request.query_params_format.get('status',None)
         active_id = request.query_params_format.get('active_id',None)
+        mobile = request.query_params_format.get('mobile', None)
 
-        query = Makes.objects.filter()
 
         if isapp:
+            query = Makes.objects.filter()
             query = query.filter(userid = request.user['userid'])
 
             print("我的预约用户ID{}".format(request.user['userid']))
@@ -99,11 +100,29 @@ class GoodsAPIView(viewsets.ViewSet):
             return {"data": MakesModelSerializer(query, many=True).data}
 
         else:
+
+            query_format = str()
+            query_params = []
+
+
             if active_id:
-                query = query.filter(active_id=active_id)
+                query_format = query_format + " and t1.active_id='{}'".format(active_id)
 
             if status:
-                query = query.filter(status=status)
+                query_format = query_format + " and t1.status='{}'".format(status)
+
+            if mobile:
+                query_format = query_format + " and t2.mobile='{}'".format(mobile)
+
+            sql = """
+                SELECT t1.* FROM `makestable` as t1
+                INNER JOIN user as t2 ON t1.userid=t2.userid
+                WHERE 1=1 %s order by t1.createtime desc
+            """ % (query_format)
+
+            print(sql)
+
+            query = Makes.objects.raw(sql)
 
             page = int(request.query_params_format.get("page", 1))
 
@@ -111,10 +130,8 @@ class GoodsAPIView(viewsets.ViewSet):
             page_start = page_size * page - page_size
             page_end = page_size * page
 
-            query = query.order_by('-createtime')
-
             headers = {
-                'Total': len(query)
+                'Total': len(list(query))
             }
 
             return {"data":MakesModelSerializer(query[page_start:page_end],many=True).data,"header":headers}
