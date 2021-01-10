@@ -144,6 +144,7 @@ class OrderAPIView(viewsets.ViewSet):
 
         orderHandler =  OrderBase(order=orderObj)
 
+
         if active_id:
             if  data['data']['goods'][0]['number'] != 1:
                 raise PubErrorCustom("预约抢购数量只能是1")
@@ -172,10 +173,16 @@ class OrderAPIView(viewsets.ViewSet):
                 raise PubErrorCustom("未预约!")
 
         for item in data['data']['goods']:
+
+
+
             try:
                 goods = Goods.objects.get(gdid=item.get("gdid"), gdstatus='0')
             except Goods.DoesNotExist:
                 raise PubErrorCustom("商品({})已下架!".format(item.get("gdid")))
+
+            if goods.gdid == "G000023" and not active_id:
+                raise PubErrorCustom("预约抢购商品不允许直接购买!")
 
             try:
                 glink = GoodsLinkSku.objects.select_for_update().get(id=item.get("linkid"))
