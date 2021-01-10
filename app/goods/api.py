@@ -111,13 +111,13 @@ class GoodsAPIView(viewsets.ViewSet):
             page_start = page_size * page - page_size
             page_end = page_size * page
 
-            query = query.order_by('-createtime')[page_start:page_end]
+            query = query.order_by('-createtime')
 
             headers = {
                 'Total': len(query)
             }
 
-            return {"data":MakesModelSerializer(query,many=True).data,"header":headers}
+            return {"data":MakesModelSerializer(query[page_start:page_end],many=True).data,"header":headers}
 
 
     @list_route(methods=['POST'])
