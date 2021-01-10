@@ -114,7 +114,7 @@ class GoodsAPIView(viewsets.ViewSet):
         预约
         """
 
-        bal = LimitGoods1.cals_bal(userid=request.user['userid'])
+        bal = LimitGoods1(userid=request.user['userid']).cals_bal()
         if bal<=0:
             raise PubErrorCustom("请先购买舜，再预约!")
 
