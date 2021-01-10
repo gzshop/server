@@ -89,7 +89,7 @@ class LimitGoods1(object):
     def cals_bal(self):
 
         """
-        查询购买了多少舜
+        舜购买1瓶2次预约机会  查看还有多少预约机会
         """
 
         selfGoodsNumber = Makes.objects.filter(userid=self.userid).count()
@@ -106,7 +106,7 @@ class LimitGoods1(object):
 
         obj = list(OrderGoodsLink.objects.raw(query))
         if len(obj):
-            GoodsNumber = [ sum(item.gdnum) for item in obj]
+            GoodsNumber = sum([ item.gdnum for item in obj])
         else:
             GoodsNumber = 0
 
