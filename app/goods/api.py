@@ -72,7 +72,7 @@ class GoodsAPIView(viewsets.ViewSet):
             if status:
                 query = query.filter(status=status)
             if isapp:
-                query = query.filter(end_time__gt=UtilTime().timestamp)
+                query = query.filter(end_time__gt=UtilTime().timestamp * 1000)
             return {"data":ActiveModelSerializer(query.order_by('-createtime'),many=True).data}
 
     @list_route(methods=['GET'])
