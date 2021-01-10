@@ -89,8 +89,6 @@ class GoodsAPIView(viewsets.ViewSet):
 
         query = Makes.objects.filter()
 
-
-
         if isapp:
             query = query.filter(userid = request.user['userid'])
 

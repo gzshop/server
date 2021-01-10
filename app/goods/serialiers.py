@@ -5,6 +5,7 @@ from app.goods.models import GoodsCateGory,Goods,GoodsTheme,Card,Cardvirtual,Del
 from app.user.models import Users
 from app.order.models import Order
 from lib.utils.mytime import UtilTime
+from app.goodslimit import LimitGoods1
 import json
 
 
@@ -74,6 +75,11 @@ class MakesModelSerializer(serializers.ModelSerializer):
     order = serializers.SerializerMethodField()
     goods = serializers.SerializerMethodField()
     active = serializers.SerializerMethodField()
+
+    bal = serializers.SerializerMethodField()
+
+    def get_bal(self,obj):
+        return LimitGoods1(userid=request.user['userid']).cals_bal()
 
     def get_active(self,obj):
         return ActiveModelSerializer(Active.objects.get(id=obj.active_id),many=False).data
