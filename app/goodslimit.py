@@ -90,7 +90,9 @@ class LimitGoods1(object):
 
         """
         舜购买1瓶2次预约机会  查看还有多少预约机会
+        2021/01/12 加到3次预约机会
         """
+        count = 3
 
         selfGoodsNumber = Makes.objects.filter(userid=self.userid).count()
 
@@ -110,5 +112,5 @@ class LimitGoods1(object):
         else:
             GoodsNumber = 0
 
-        logger.info("预约次数{}|舜{}|条件{}".format(selfGoodsNumber, GoodsNumber, 2))
-        return GoodsNumber * 2 - selfGoodsNumber
+        logger.info("预约次数{}|舜{}|条件{}".format(selfGoodsNumber, GoodsNumber, count))
+        return GoodsNumber * count - selfGoodsNumber
